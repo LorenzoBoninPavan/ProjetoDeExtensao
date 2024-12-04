@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário de Inspeção</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #1e1e1e;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .button {
+            background-color: #28a745;
+            color: #fff;
+            font-size: 24px;
+            padding: 20px 40px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #218838;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #444;
+        }
+
+        .item-table img {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .item-table img:hover {
+            transform: scale(1.2);
+        }
+
+        /* Classe para uniformizar os ícones */
+        .icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        .disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .item-table img {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .item-table img:hover {
+            transform: scale(1.2);
+        }
+
+        /* Ajuste para os ícones de aprovado e reprovado */
+        .status-icon {
+            width: 32px;
+            /* Aumente o tamanho */
+            height: 32px;
+            /* Aumente o tamanho */
+            display: block;
+            margin: 0 auto;
+            /* Centralize horizontalmente */
+        }
+
+        td {
+            text-align: center;
+            /* Centralize os ícones na célula */
+            vertical-align: middle;
+            /* Centralize verticalmente */
+        }
+    </style>
+    <script>
+        function generatePDF(itemName) {
+            alert(`Gerando PDF para: ${itemName}`);
+        }
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Formulário de Inspeção</h1>
+        </div>
+        <form id="inspectionForm" action="identificacao.html">
+            <table>
+                <tr>
+                    <td colspan="2" style="text-align: center;">
+                        <button type="submit" class="button">Nova Inspeção</button>
+                    </td>
+                </tr>
+            </table>
+        </form>
+
+        <table class="item-table">
+            <thead>
+                <tr>
+                    <th>Tag</th>
+                    <th>Data</th>
+                    <th>Item</th>
+                    <th>Status</th>
+                    <th>Editar</th>
+                    <th>Finalizado</th>
+                    <th>PDF</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>#2121986758</td>
+                    <td>02/12/2024</td>
+                    <td>Manilha</td>
+                    <td>Pendente</td>
+                    <td>
+                        <a href="editar.html"><img src="img/editar.png" alt="Editar" title="Editar"></a>
+                    </td>
+                    <td>
+                        <img src="img/Reprovado.png" class="status-icon" alt="Reprovado" title="Reprovado">
+                    </td>
+                    <td>
+                        <img src="img/pdf.png" class="disabled" alt="PDF Indisponível" title="PDF Indisponível">
+                    </td>
+                </tr>
+                <tr>
+                    <td>#95865968590</td>
+                    <td>05/01/2025</td>
+                    <td>Corda</td>
+                    <td>Finalizado</td>
+                    <td>
+                        <img src="img/editar.png" class="disabled" alt="Editar Indisponível"
+                            title="Editar Indisponível">
+                    </td>
+                    <td>
+                        <img src="img/aprovado.png" class="status-icon" alt="Aprovado" title="Aprovado">
+                    </td>
+                    <td>
+                        <img src="img/pdf.png" alt="Gerar PDF" title="Gerar PDF" onclick="openPDF('pdf/relatorio.docx.pdf')">
+                        <script>
+                            function openPDF(filePath) {
+                                // Abre o PDF em uma nova aba
+                                window.open(filePath, '_blank');
+                            }
+                        </script>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+
+</html>

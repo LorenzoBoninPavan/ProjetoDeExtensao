@@ -55,6 +55,11 @@
         //$stmt->execute();
         
         echo "Dados salvos com sucesso!";
+        echo "<script>
+        setTimeout(function() {
+            window.location.href = 'checklist.html';
+        }, 3000); // 3000 milissegundos = 3 segundos
+    </script>";
     //} catch (PDOException $e) {
         //echo "Erro ao salvar os dados: " . $e->getMessage();
     //}

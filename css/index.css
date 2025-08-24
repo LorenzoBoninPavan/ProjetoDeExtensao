@@ -1,0 +1,189 @@
+/* Geral */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+/* Título */
+.header {
+    text-align: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #eee;
+}
+
+.header h1 {
+    color: #0056b3;
+    font-size: 2.5em;
+    margin: 0;
+}
+
+/* Botões e Formulário */
+form {
+    margin-bottom: 20px;
+}
+
+.button {
+    background-color: #28a745;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s ease;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.button:hover {
+    background-color: #218838;
+}
+
+/* Tabelas */
+.item-table,
+form table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.item-table th,
+.item-table td,
+form table td {
+    padding: 12px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+.item-table th {
+    background-color: #0056b3;
+    color: white;
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+.item-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.item-table tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Ícones */
+.item-table img {
+    width: 24px;
+    height: 24px;
+    vertical-align: middle;
+}
+
+.item-table a img {
+    border: none;
+}
+
+.item-table .disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.status-icon {
+    width: 30px;
+    height: 30px;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .container {
+        width: 95%;
+        margin: 10px auto;
+    }
+
+    .header h1 {
+        font-size: 2em;
+    }
+
+    .item-table,
+    .item-table thead,
+    .item-table tbody,
+    .item-table th,
+    .item-table td,
+    .item-table tr {
+        display: block;
+    }
+
+    .item-table thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+
+    .item-table tr {
+        border: 1px solid #ccc;
+        margin-bottom: 15px;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .item-table td {
+        border: none;
+        position: relative;
+        padding-left: 50%;
+        text-align: left;
+    }
+
+    .item-table td:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 6px;
+        width: 45%;
+        padding-right: 10px;
+        white-space: nowrap;
+        font-weight: bold;
+        text-align: right;
+    }
+
+    /* Adicionando labels para cada td para mobile */
+    .item-table td:nth-of-type(1):before {
+        content: "Tag:";
+    }
+
+    .item-table td:nth-of-type(2):before {
+        content: "Data:";
+    }
+
+    .item-table td:nth-of-type(3):before {
+        content: "Item:";
+    }
+
+    .item-table td:nth-of-type(4):before {
+        content: "Status:";
+    }
+
+    .item-table td:nth-of-type(5):before {
+        content: "Editar:";
+    }
+
+    .item-table td:nth-of-type(6):before {
+        content: "Finalizado:";
+    }
+
+    .item-table td:nth-of-type(7):before {
+        content: "PDF:";
+    }
+}

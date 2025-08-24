@@ -1,236 +1,14 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inspeção</title>
-    <style>
-        .menu {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background-color: #1e1e1e;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: flex-start;
-            align-items: center;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            z-index: 1000;
-        }
-
-        .menu .button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            background-color: #28a745;
-            color: #fff;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s;
-        }
-
-        .menu .button:hover {
-            background-color: #218838;
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-        }
-
-        .menu .button:active {
-            transform: scale(1);
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-        }
-
-        body {
-            background-color: #121212;
-            color: #fff;
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 20px;
-            background-color: #1e1e1e;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-        }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-
-        th,
-        td {
-            border: 1px solid #444;
-            padding: 10px;
-            text-align: center;
-        }
-
-        th {
-            background-color: #222;
-        }
-
-        td {
-            background-color: #333;
-        }
-
-        .button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            color: #fff;
-            font-weight: bold;
-            cursor: pointer;
-            margin: 5px;
-            transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s;
-        }
-
-        .button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-        }
-
-        .button:active {
-            transform: scale(1);
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-        }
-
-        .button-save {
-            background-color: #28a745;
-        }
-
-        .button-save:hover {
-            background-color: #218838;
-        }
-
-        .button-clear {
-            background-color: #dc3545;
-        }
-
-        .button-clear:hover {
-            background-color: #c82333;
-        }
-
-        .button-approve {
-            background-color: #007bff;
-        }
-
-        .button-approve:hover {
-            background-color: #0056b3;
-        }
-
-        .button-disapprove {
-            background-color: #ff0000;
-        }
-
-        .button-disapprove:hover {
-            background-color: #c82333;
-        }
-
-        .custom-alert {
-            background-color: #444;
-            color: #fff;
-            padding: 15px;
-            border-radius: 5px;
-            text-align: center;
-            width: 250px;
-            margin: 20px auto;
-            display: none;
-        }
-
-        textarea {
-            width: 100%;
-            height: 100px;
-            background-color: #333;
-            color: #fff;
-            border: 1px solid #444;
-            border-radius: 5px;
-            padding: 10px;
-            margin-bottom: 20px;
-        }
-
-        textarea:focus {
-            border-color: #28a745;
-            box-shadow: 0 0 5px rgba(40, 167, 69, 0.5);
-        }
-
-        .photo-input-group {
-            display: flex;
-            gap: 15px;
-            justify-content: space-between;
-            margin-top: 20px;
-        }
-
-        .photo-input {
-            flex: 1;
-            min-width: 70px;
-            /* Tamanho menor dos quadrados */
-            position: relative;
-        }
-
-        .photo-input label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #fff;
-        }
-
-        .photo-input input[type="file"] {
-            width: 100%;
-            height: 0;
-            padding-top: 100%;
-            /* Garante a proporção quadrada */
-            background-color: #333;
-            border: none;
-            border-radius: 5px;
-            overflow: hidden;
-            cursor: pointer;
-            position: relative;
-            display: block;
-            object-fit: cover;
-            /* Mantém a imagem quadrada e preenche o espaço */
-        }
-
-        .photo-input input[type="file"]::file-selector-button {
-            background-color: #28a745;
-            color: #fff;
-            padding: 5px 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .photo-input input[type="file"]::file-selector-button:hover {
-            background-color: #218838;
-        }
-
-        .approval {
-            text-align: center;
-            margin: 15px 0;
-        }
-
-        .approval label {
-            margin-right: 10px;
-        }
-    </style>
+    <link rel="stylesheet" href="css/checklist.css">
 </head>
-
 <body>
-    <div class="menu">
-        <button type="button" class="button" onclick="history.back()">Voltar</button>
-    </div>
+    <div id="menu-container"></div>
+    
     <div class="container">
         <h1>Checklist</h1>
         <table>
@@ -294,9 +72,7 @@
             </tbody>
         </table>
         <hr>
-        <!-- Área de Texto -->
         <textarea placeholder="Comentários adicionais..."></textarea>
-        <!-- Campos para Fotos -->
         <hr>
         <div class="photo-input-group">
             <div class="photo-input">
@@ -312,44 +88,17 @@
                 <input type="file" id="photo3" name="photo3" accept="image/*">
             </div>
         </div>
-        <!-- Botões de Aprovação/Reprovação -->
         <hr>
         <div>
-            <!-- Radios para seleção de aprovação -->
             <input type="radio" name="approval" value="reprovado"> Reprovado
             <input type="radio" name="approval" value="aprovado"> Aprovado
         </div>
         <hr>
-        <!-- Botões de Ação -->
         <div id="customAlert" class="custom-alert"></div>
-        <button class="button button-save" onclick="confirmSave()">Salvar</button>
+        <button class="button button-save" onclick="window.location.href='sucesso.html'">Salvar</button>
         <button class="button button-clear" onclick="showAlert('Checklist limpa!', '#cc0000')">Limpar</button>
+    </div>
 
-        <script>
-            function confirmSave() {
-                // Exibe uma caixa de confirmação para o usuário
-                var userConfirmation = window.confirm('Você deseja salvar a inspeção?');
-
-                // Se o usuário clicar em "OK", salva e redireciona
-                if (userConfirmation) {
-                    showAlert('Inspeção salva!', '#28a745');
-                    window.location.href = 'index.html';
-                }
-            }
-
-            // Função para exibir alertas personalizados
-            function showAlert(message, color) {
-                var alertDiv = document.getElementById('customAlert');
-                alertDiv.style.backgroundColor = color;
-                alertDiv.textContent = message;
-                alertDiv.style.display = 'block';
-
-                // Esconde o alerta após 3 segundos
-                setTimeout(function () {
-                    alertDiv.style.display = 'none';
-                }, 3000);
-            }
-        </script>
+    <script src="js/script.js"></script>
 </body>
-
 </html>

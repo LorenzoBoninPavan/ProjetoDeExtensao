@@ -175,3 +175,8 @@ form table td {
         padding: 12px;
     }
 }
+/* Estilo para campos com erro */
+input.error {
+    border-color: #dc3545; /* Vermelho */
+    box-shadow: 0 0 5px rgba(220, 53, 69, 0.5);
+}

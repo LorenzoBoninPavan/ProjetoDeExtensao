@@ -203,3 +203,12 @@ hr {
         margin-top: 10px;
     }
 }
+/* Estilo para linhas da tabela com erro */
+tr.error {
+    background-color: #fcebeb; /* Um vermelho bem claro para o fundo da linha */
+}
+
+/* Opcional: Adiciona uma borda nas células para maior destaque */
+tr.error td {
+    border: 1px solid #dc3545; /* Vermelho mais forte */
+}

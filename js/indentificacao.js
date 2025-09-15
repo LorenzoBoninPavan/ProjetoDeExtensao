@@ -1,32 +1,26 @@
 // js/indentificacao.js
-
-// Importa a função do Firebase
 import { iniciarNovoCadastroInspecao } from './firebase.js';
 
-// Aguarda o carregamento completo do DOM
 document.addEventListener('DOMContentLoaded', function () {
-    // Seleciona o formulário pelo ID
     const form = document.getElementById('inspectionForm');
 
-    // Adiciona um único ouvinte de evento para a submissão do formulário
     form.addEventListener('submit', async function (event) {
-        event.preventDefault(); // Impede o envio do formulário por padrão
+        event.preventDefault(); // Impede o envio do formulário padrão
 
-        // Seleciona os campos obrigatórios
         const tagInput = document.getElementById('tag');
         const serieInput = document.getElementById('name');
         const dataInput = document.getElementById('date');
         const validadeInput = document.getElementById('validacao');
-
-        // Remove a classe de erro de todos os campos antes de validar novamente
+        
+        // Remove a classe de erro para validação
         tagInput.classList.remove('error');
         serieInput.classList.remove('error');
         dataInput.classList.remove('error');
         validadeInput.classList.remove('error');
 
         let isValid = true;
-
-        // Validação dos campos
+        
+        // Validação dos campos obrigatórios
         if (tagInput.value.trim() === '') {
             tagInput.classList.add('error');
             isValid = false;
@@ -44,14 +38,12 @@ document.addEventListener('DOMContentLoaded', function () {
             isValid = false;
         }
 
-        // Se o formulário não for válido, exibe um alerta e para a execução
         if (!isValid) {
             alert('Por favor, preencha todos os campos obrigatórios.');
-            return; // Interrompe a função aqui
+            return;
         }
 
-        // Se a validação passar, continua com a lógica do Firebase
-        const form = event.target;
+        // Prepara os dados do formulário para enviar ao Firebase
         const dadosForm = {
             tag: form.tag.value,
             serie: form.name.value,
@@ -59,19 +51,24 @@ document.addEventListener('DOMContentLoaded', function () {
             validade: form.validacao.value,
             observacao: form.observacao.value,
             fotos: [
-                document.getElementById('photo').files[0],
-                document.getElementById('photo2').files[0],
-                document.getElementById('photo3').files[0]
-            ].filter(file => file) // Filtra para remover arquivos nulos
+                document.getElementById('photo'),
+                document.getElementById('photo2'),
+                document.getElementById('photo3')
+            ]
         };
 
         try {
+            // Inicia o cadastro no Firebase e obtém o ID
             const inspecaoId = await iniciarNovoCadastroInspecao(dadosForm);
-            sessionStorage.setItem('inspecaoId', inspecaoId); // Armazena o ID
-            window.location.href = form.action; // Redireciona para a próxima página
+            
+            // Armazena o ID no navegador para a próxima tela
+            sessionStorage.setItem('inspecaoId', inspecaoId); 
+            
+            // Redireciona para a próxima página
+            window.location.href = form.action;
         } catch (error) {
             alert("Erro ao iniciar a inspeção. Por favor, tente novamente.");
-            console.error(error); // Ajuda a depurar o erro no console
+            console.error(error);
         }
     });
 });

@@ -1,32 +1,125 @@
 <!DOCTYPE html>
+
 <html lang="pt-BR">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Especificações</title>
+
     <link rel="stylesheet" href="css/especificacao.css">
+
 </head>
+
 <body>
+
     <div class="menu">
+
         <button type="button" class="button" onclick="history.back()">Voltar</button>
+
     </div>
-    
+
+   
+
     <div class="form-container">
+
         <div class="title">ESPECIFICAÇÕES</div>
-                <form id="especificacaoForm" action="checklist.html" method="POST">
+
+        <form id="especificacaoForm" action="checklist.html" method="POST">
+
             <div class="form-group">
+
                 <label for="tipo">TIPO</label>
+
                 <select id="tipo" name="tipo">
+
                     <option value="">Selecione um tipo</option>
+
+                    <option value="tipo1">Tipo 1</option>
+
+                    <option value="tipo2">Tipo 2</option>
+
+                    <option value="tipo3">Tipo 3</option>
+
                 </select>
+
             </div>
+
+            <div class="form-group">
+
+                <label for="fabricante">FABRICANTE</label>
+
+                <select id="fabricante" name="fabricante">
+
+                    <option value="">Selecione um fabricante</option>
+
+                    <option value="fabricante1">Fabricante 1</option>
+
+                    <option value="fabricante2">Fabricante 2</option>
+
+                    <option value="fabricante3">Fabricante 3</option>
+
+                </select>
+
+            </div>
+
+            <div class="form-group">
+
+                <label for="capacidade">CAPACIDADE</label>
+
+                <select id="capacidade" name="capacidade">
+
+                    <option value="">Selecione uma capacidade</option>
+
+                    <option value="capacidade1">Capacidade 1</option>
+
+                    <option value="capacidade2">Capacidade 2</option>
+
+                    <option value="capacidade3">Capacidade 3</option>
+
+                </select>
+
+            </div>
+
+            <div class="form-group">
+
+                <label for="bitola">BITOLA</label>
+
+                <select id="bitola" name="bitola">
+
+                    <option value="">Selecione uma bitola</option>
+
+                    <option value="bitola1">Bitola 1</option>
+
+                    <option value="bitola2">Bitola 2</option>
+
+                    <option value="bitola3">Bitola 3</option>
+
+                </select>
+
+            </div>
+
+           
+
             <div class="button-group">
+
                 <button type="reset" class="button reset">LIMPAR</button>
+
                 <button type="submit" class="button">AVANÇAR</button>
+
             </div>
+
         </form>
+
     </div>
-    
-    <script src="js/especificacao.js"></script>
+
+   
+
+    <script type="module" src="js/especificacao.js"></script>
+
 </body>
+
 </html>

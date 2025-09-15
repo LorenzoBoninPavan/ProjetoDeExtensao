@@ -1,6 +1,6 @@
 // firebase.js
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, doc, setDoc, addDoc, updateDoc, Timestamp } from "firebase/firestore";
+import { getFirestore, collection, doc, addDoc, updateDoc, Timestamp } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 // Configuração do Firebase
@@ -22,6 +22,27 @@ const storage = getStorage(app);
 // Exporta o banco de dados e o storage para serem usados em outros arquivos
 export { db, storage };
 
+/**
+ * Função auxiliar para fazer upload de fotos para o Firebase Storage.
+ * @param {string} caminho - O caminho base no Storage (ex: 'inspecoes/ID_DA_INSPECAO').
+ * @param {Array<File>} arquivos - Array de objetos File a serem enviados.
+ * @returns {Promise<Array<string>>} Promise que resolve com as URLs de download das fotos.
+ */
+const uploadFotos = async (caminho, arquivos) => {
+    const urls = [];
+    if (arquivos.length > 0) {
+        for (const file of arquivos) {
+            // Cria um nome único usando a data e um identificador
+            const nomeUnico = `${Date.now()}_${file.name}`;
+            const storageRef = ref(storage, `${caminho}/${nomeUnico}`);
+            await uploadBytes(storageRef, file);
+            const url = await getDownloadURL(storageRef);
+            urls.push(url);
+        }
+    }
+    return urls;
+};
+
 // --- Funções para gerenciar o cadastro em múltiplas telas ---
 
 /**
@@ -32,21 +53,9 @@ export { db, storage };
  */
 export const iniciarNovoCadastroInspecao = async (dadosTela1) => {
     try {
-        const fotoInputs = dadosTela1.fotos;
-        const fotoUrls = [];
-        
-        // Coleta todos os arquivos de todos os inputs de foto
-        // O .filter(file => file) é importante para remover inputs de arquivo vazios
-        const arquivosParaUpload = fotoInputs.flatMap(input => Array.from(input.files)).filter(file => file);
-
-        if (arquivosParaUpload.length > 0) {
-            for (const file of arquivosParaUpload) {
-                const storageRef = ref(storage, `inspecoes/${dadosTela1.tag || 'sem_tag'}/${file.name}`);
-                await uploadBytes(storageRef, file);
-                const url = await getDownloadURL(storageRef);
-                fotoUrls.push(url);
-            }
-        }
+        const arquivosParaUpload = dadosTela1.fotos
+            .flatMap(input => Array.from(input.files))
+            .filter(file => file);
 
         const novaInspecaoRef = await addDoc(collection(db, "inspecoes"), {
             identificacao: {
@@ -55,10 +64,16 @@ export const iniciarNovoCadastroInspecao = async (dadosTela1) => {
                 data: dadosTela1.data,
                 validade: dadosTela1.validade,
                 observacao: dadosTela1.observacao,
-                fotos: fotoUrls.length > 0 ? fotoUrls : ['sem_foto'],
+                fotos: [], // Inicializa como vazio, as URLs serão adicionadas depois
             },
             dataCriacao: Timestamp.now(),
             status: "identificacao_concluida",
+        });
+
+        const fotoUrls = await uploadFotos(`inspecoes/${novaInspecaoRef.id}/identificacao`, arquivosParaUpload);
+
+        await updateDoc(novaInspecaoRef, {
+            "identificacao.fotos": fotoUrls.length > 0 ? fotoUrls : ['sem_foto']
         });
 
         console.log("Nova inspeção iniciada com sucesso! ID:", novaInspecaoRef.id);
@@ -96,20 +111,11 @@ export const salvarEspecificacaoInspecao = async (inspecaoId, dadosTela2) => {
  */
 export const finalizarInspecao = async (inspecaoId, dadosTela3) => {
     try {
-        const fotoInputs = dadosTela3.fotos;
-        const fotoUrls = [];
-        
-        // Coleta todos os arquivos de todos os inputs de foto
-        const arquivosParaUpload = fotoInputs.flatMap(input => Array.from(input.files)).filter(file => file);
+        const arquivosParaUpload = dadosTela3.fotos
+            .flatMap(input => Array.from(input.files))
+            .filter(file => file);
 
-        if (arquivosParaUpload.length > 0) {
-            for (const file of arquivosParaUpload) {
-                const storageRef = ref(storage, `inspecoes/${inspecaoId}/checklist/${file.name}`);
-                await uploadBytes(storageRef, file);
-                const url = await getDownloadURL(storageRef);
-                fotoUrls.push(url);
-            }
-        }
+        const fotoUrls = await uploadFotos(`inspecoes/${inspecaoId}/checklist`, arquivosParaUpload);
         
         const inspecaoDocRef = doc(db, "inspecoes", inspecaoId);
         await updateDoc(inspecaoDocRef, {

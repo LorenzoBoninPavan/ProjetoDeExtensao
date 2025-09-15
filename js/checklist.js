@@ -1,50 +1,66 @@
 // js/checklist.js
 import { finalizarInspecao } from './firebase.js';
 
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('checklistForm');
-    const clearButton = document.querySelector('.button-clear');
+document.addEventListener('DOMContentLoaded', function () {
+    const inspecaoId = sessionStorage.getItem('inspecaoId');
 
-    form.addEventListener('submit', async function(event) {
+    if (!inspecaoId) {
+        alert("Erro: ID da inspeção não encontrado. Retornando ao início.");
+        window.location.href = 'identificacao.html';
+        return;
+    }
+
+    const form = document.getElementById('checklistForm');
+
+    form.addEventListener('submit', async function (event) {
         event.preventDefault();
 
-        // ... (resto do seu código de validação, que está correto) ...
-
-        const inspecaoId = sessionStorage.getItem('inspecaoId');
-        if (!inspecaoId) {
-            alert("Erro: ID da inspeção não encontrado. Por favor, volte e reinicie o processo.");
-            return;
+        // 1. Coleta os dados dos itens do checklist
+        const checklistItems = [];
+        // O seu HTML usa `name="item1"`, `name="item2"`, etc.
+        // Você pode iterar sobre eles ou coletar individualmente.
+        // Esta abordagem é robusta para o seu HTML atual:
+        for (let i = 1; i <= 8; i++) {
+            const item = document.querySelector(`input[name="item${i}"]:checked`);
+            checklistItems.push({
+                item: i, // Ou o texto da pergunta
+                resposta: item ? item.value : null
+            });
         }
         
-        const itens = {};
-        for (let i = 1; i <= 8; i++) {
-            const item = form.querySelector(`input[name="item${i}"]:checked`);
-            itens[`item${i}`] = item ? item.value : 'na';
-        }
+        // 2. Coleta o comentário
+        // O seu HTML não tem ID na textarea. É importante adicionar um.
+        const comentarios = document.querySelector('textarea').value;
+        
+        // 3. Coleta o status de aprovação
+        const aprovacao = document.querySelector('input[name="approval"]:checked');
 
-        // Corrija a coleta dos arquivos de foto.
-        const dadosForm = {
-            itens: itens,
-            comentarios: form.querySelector('textarea').value,
-            aprovacao: form.querySelector('input[name="approval"]:checked')?.value,
-            // Colete os arquivos de cada input
-            fotos: [
-                form.photo1.files[0],
-                form.photo2.files[0],
-                form.photo3.files[0]
-            ].filter(file => file) // Filtra para remover valores nulos se não houver arquivo
+        // 4. Coleta os arquivos de foto
+        const fotos = [
+            document.getElementById('photo1'),
+            document.getElementById('photo2'),
+            document.getElementById('photo3')
+        ];
+
+        // Cria o objeto final com todos os dados coletados
+        const dadosTela3 = {
+            itens: checklistItems,
+            comentarios: comentarios,
+            aprovacao: aprovacao ? aprovacao.value : null,
+            fotos: fotos
         };
 
         try {
-            // Chama a função finalizadora
-            await finalizarInspecao(inspecaoId, dadosForm);
-            sessionStorage.removeItem('inspecaoId'); // Limpa a sessão
-            window.location.href = 'sucesso.html'; // Redireciona para a página de sucesso
+            await finalizarInspecao(inspecaoId, dadosTela3);
+            
+            // Limpa o ID para um novo cadastro
+            sessionStorage.removeItem('inspecaoId');
+            
+            // Redireciona para a página de sucesso
+            window.location.href = 'sucesso.html'; 
         } catch (error) {
-            alert("Erro ao finalizar a inspeção. Por favor, tente novamente.");
+            alert("Erro ao finalizar o cadastro. Por favor, tente novamente.");
             console.error(error);
         }
     });
-
-    // ... (sua função de limpar, que está correta) ...
 });

@@ -1,97 +1,37 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulário de Inspeção</title>
-    <link rel="stylesheet" href="css/indentificacao.css">
-</head>
-<body>
-    <!-- Menu fixo no topo da página -->
-    <div class="menu">
-        <button type="button" class="button" onclick="history.back()">Voltar</button>
-    </div>
-    
-    <div class="container">
-        <div class="header">
-            <h1>Formulário de Inspeção</h1>
-        </div>
-        <form id="inspectionForm" action="especificacao.html" method="get" enctype="multipart/form-data">
-            <table>
-                <tr>
-                    <td>
-                        <div class="form-group">
-                            <label for="photo">Foto</label>
-                            <input type="file" id="photo" name="photo" accept="image/*">
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div class="form-group">
-                            <label for="tag">TAG APLICÁVEL</label>
-                            <input type="text" id="tag" name="tag" placeholder="TAG APLICÁVEL">
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div class="form-group">
-                            <label for="name">Série</label>
-                            <input type="text" id="name" name="name" placeholder="Série">
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div class="form-group">
-                            <label for="date">Data</label>
-                            <input type="date" id="date" name="date">
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div class="form-group">
-                            <label for="validacao">Validade de Inspeção</label>
-                            <input type="text" id="validacao" name="validacao" placeholder="Validade de Inspeção">
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div class="form-group">
-                            <label for="photo2">Foto Adicional 1</label>
-                            <input type="file" id="photo2" name="photo2" accept="image/*">
-                        </div>
-                    </td>
-                    <td>
-                        <div class="form-group">
-                            <label for="photo3">Foto Adicional 2</label>
-                            <input type="file" id="photo3" name="photo3" accept="image/*">
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2">
-                        <div class="form-group">
-                            <label for="observacao">Observação</label>
-                            <textarea id="observacao" name="observacao" placeholder="Observação"></textarea>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2" style="text-align: center;">
-                        <div class="button-group">
-                            <button type="reset" class="button reset">Limpar</button>
-                            <button type="submit" class="button">Cadastrar</button>
-                        </div>
-                    </td>
-                </tr>
-            </table>
-        </form>
-    </div>
-    <script src="js/indentificacao.js"></script>
 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário de Inspeção</title>
+    <link rel="stylesheet" href="css/indentificacao.css">
+</head>
+
+<body>
+    <div class="menu">
+        <button type="button" class="button" onclick="history.back()">Voltar</button>
+    </div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>Formulário de Inspeção</h1>
+        </div>
+                <form id="inspectionForm" action="especificacao.html" method="post" enctype="multipart/form-data">
+        <table>
+            <tr>
+                <td>
+                    <div class="form-group">
+                        <label for="photo">Foto</label>
+                        <input type="file" id="photo" name="photo" accept="image/*">
+                    </div>
+                </td>
+            </tr>
+        </table>
+        </form>
+    </div>
+    
+    <script src="js/indentificacao.js"></script>
 </body>
+
 </html>

@@ -58,7 +58,11 @@ document.addEventListener('DOMContentLoaded', function () {
             data: form.date.value,
             validade: form.validacao.value,
             observacao: form.observacao.value,
-            fotos: [form.photo, form.photo2, form.photo3]
+            fotos: [
+                document.getElementById('photo').files[0],
+                document.getElementById('photo2').files[0],
+                document.getElementById('photo3').files[0]
+            ].filter(file => file) // Filtra para remover arquivos nulos
         };
 
         try {

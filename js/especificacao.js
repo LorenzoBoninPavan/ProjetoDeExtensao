@@ -1,5 +1,15 @@
 // js/especificacao.js
 import { salvarEspecificacaoInspecao } from './firebase.js';
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+
+//Lógica de autenticação
+const auth = getAuth(app);
+onAuthStateChanged(auth, (user) => {
+    if (!user) {
+        // Se o usuário não estiver logado, redirecione para a página de login
+        window.location.href = 'login.html';
+    }
+});
 
 document.addEventListener('DOMContentLoaded', function () {
     const inspecaoId = sessionStorage.getItem('inspecaoId');
@@ -15,9 +25,7 @@ document.addEventListener('DOMContentLoaded', function () {
     form.addEventListener('submit', async function (event) {
         event.preventDefault();
 
-        // Aqui é onde você faz a adaptação
         const dadosTela2 = {
-            // Use os IDs do seu HTML para coletar os valores corretos
             tipo: document.getElementById('tipo').value,
             fabricante: document.getElementById('fabricante').value,
             capacidade: document.getElementById('capacidade').value,

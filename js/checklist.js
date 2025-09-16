@@ -1,5 +1,14 @@
 // js/checklist.js
 import { finalizarInspecao } from './firebase.js';
+import {getAuth, onAuthStateChanged} from "firebase/auth";
+
+//Lógica de autenticação
+const auth = getAuth(app);
+onAuthStateChanged(auth, (user) => {
+    if (!user){
+        window.location.href = 'login.html';
+    }
+});
 
 document.addEventListener('DOMContentLoaded', function () {
     const inspecaoId = sessionStorage.getItem('inspecaoId');
@@ -17,19 +26,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // 1. Coleta os dados dos itens do checklist
         const checklistItems = [];
-        // O seu HTML usa `name="item1"`, `name="item2"`, etc.
-        // Você pode iterar sobre eles ou coletar individualmente.
-        // Esta abordagem é robusta para o seu HTML atual:
         for (let i = 1; i <= 8; i++) {
             const item = document.querySelector(`input[name="item${i}"]:checked`);
             checklistItems.push({
-                item: i, // Ou o texto da pergunta
+                item: i,
                 resposta: item ? item.value : null
             });
         }
         
-        // 2. Coleta o comentário
-        // O seu HTML não tem ID na textarea. É importante adicionar um.
         const comentarios = document.querySelector('textarea').value;
         
         // 3. Coleta o status de aprovação

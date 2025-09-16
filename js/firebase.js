@@ -20,7 +20,7 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 
 // Exporta o banco de dados e o storage para serem usados em outros arquivos
-export { db, storage };
+export { app, db, storage };
 
 /**
  * Função auxiliar para fazer upload de fotos para o Firebase Storage.

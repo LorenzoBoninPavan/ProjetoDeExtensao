@@ -1,5 +1,15 @@
 // js/indentificacao.js
-import { iniciarNovoCadastroInspecao } from './firebase.js';
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { app, iniciarNovoCadastroInspecao } from "./firebase.js";
+
+// Lógica de autenticação
+const auth = getAuth(app);
+onAuthStateChanged(auth, (user) => {
+    if (!user) {
+        // Se o usuário não estiver logado, redirecione para a página de login
+        window.location.href = 'login.html';
+    }
+});
 
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('inspectionForm');
@@ -12,7 +22,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const dataInput = document.getElementById('date');
         const validadeInput = document.getElementById('validacao');
         
-        // Remove a classe de erro para validação
         tagInput.classList.remove('error');
         serieInput.classList.remove('error');
         dataInput.classList.remove('error');

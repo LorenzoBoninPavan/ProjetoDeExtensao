@@ -1,4 +1,4 @@
-// js/especificacao.js
+// Não sei como essa tela vai funcionar com a inclusão das classes, mas aqui é a segunda parte do cadastro
 import { salvarEspecificacaoInspecao } from './firebase.js';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 

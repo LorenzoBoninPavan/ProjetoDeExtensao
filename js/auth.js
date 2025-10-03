@@ -1,4 +1,4 @@
-// js/auth.js
+// Aqui eu já não sei se está certo, mas é a tentativa de fazer o login
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
 import { app } from "./firebase.js";
 

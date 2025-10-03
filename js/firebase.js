@@ -1,4 +1,4 @@
-// firebase.js
+// Aqui tem a configuração do firebase
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, doc, addDoc, updateDoc, Timestamp } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -64,6 +64,7 @@ export const iniciarNovoCadastroInspecao = async (dadosTela1) => {
                 data: dadosTela1.data,
                 validade: dadosTela1.validade,
                 observacao: dadosTela1.observacao,
+                // A parte da foto talvez tenha de ser alterada pois não temos acesso ao fire store e as fotos devem ser armazenadas localmente
                 fotos: [], // Inicializa como vazio, as URLs serão adicionadas depois
             },
             dataCriacao: Timestamp.now(),

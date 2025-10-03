@@ -1,4 +1,4 @@
-// js/checklist.js
+// Aqui nessa tela podemos adicionar uma verificação se o item foi aprovado ou não
 import { finalizarInspecao } from './firebase.js';
 import {getAuth, onAuthStateChanged} from "firebase/auth";
 

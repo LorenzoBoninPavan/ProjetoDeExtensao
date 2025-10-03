@@ -1,4 +1,4 @@
-// js/indentificacao.js
+// Aqui eu tentei fazer a logica de login
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { app, iniciarNovoCadastroInspecao } from "./firebase.js";
 

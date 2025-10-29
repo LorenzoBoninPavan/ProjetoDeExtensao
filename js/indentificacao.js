@@ -1,12 +1,11 @@
-// Aqui eu tentei fazer a logica de login
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+// identificacao.js
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 import { app, iniciarNovoCadastroInspecao } from "./firebase.js";
 
 // Lógica de autenticação
 const auth = getAuth(app);
 onAuthStateChanged(auth, (user) => {
     if (!user) {
-        // Se o usuário não estiver logado, redirecione para a página de login
         window.location.href = 'login.html';
     }
 });
@@ -15,65 +14,61 @@ document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('inspectionForm');
 
     form.addEventListener('submit', async function (event) {
-        event.preventDefault(); // Impede o envio do formulário padrão
+        event.preventDefault();
 
         const tagInput = document.getElementById('tag');
         const serieInput = document.getElementById('name');
         const dataInput = document.getElementById('date');
         const validadeInput = document.getElementById('validacao');
-        
+
         tagInput.classList.remove('error');
         serieInput.classList.remove('error');
         dataInput.classList.remove('error');
         validadeInput.classList.remove('error');
 
         let isValid = true;
-        
-        // Validação dos campos obrigatórios
-        if (tagInput.value.trim() === '') {
-            tagInput.classList.add('error');
-            isValid = false;
-        }
-        if (serieInput.value.trim() === '') {
-            serieInput.classList.add('error');
-            isValid = false;
-        }
-        if (dataInput.value.trim() === '') {
-            dataInput.classList.add('error');
-            isValid = false;
-        }
-        if (validadeInput.value.trim() === '') {
-            validadeInput.classList.add('error');
-            isValid = false;
-        }
+        if (tagInput.value.trim() === '') { tagInput.classList.add('error'); isValid = false; }
+        if (serieInput.value.trim() === '') { serieInput.classList.add('error'); isValid = false; }
+        if (dataInput.value.trim() === '') { dataInput.classList.add('error'); isValid = false; }
+        if (validadeInput.value.trim() === '') { validadeInput.classList.add('error'); isValid = false; }
 
         if (!isValid) {
             alert('Por favor, preencha todos os campos obrigatórios.');
             return;
         }
 
-        // Prepara os dados do formulário para enviar ao Firebase
+        // Captura as imagens e converte para Base64
+        const fotosInputs = [
+            document.getElementById('photo'),
+            document.getElementById('photo2'),
+            document.getElementById('photo3')
+        ];
+
+        const fotosBase64 = await Promise.all(
+            fotosInputs.map(input => {
+                const file = input.files[0];
+                return new Promise(resolve => {
+                    if (!file) return resolve(null);
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = () => resolve(null);
+                    reader.readAsDataURL(file);
+                });
+            })
+        );
+
         const dadosForm = {
-            tag: form.tag.value,
-            serie: form.name.value,
-            data: form.date.value,
-            validade: form.validacao.value,
+            tag: tagInput.value,
+            serie: serieInput.value,
+            data: dataInput.value,
+            validade: validadeInput.value,
             observacao: form.observacao.value,
-            fotos: [
-                document.getElementById('photo'),
-                document.getElementById('photo2'),
-                document.getElementById('photo3')
-            ]
+            fotos: fotosBase64.filter(f => f !== null)
         };
 
         try {
-            // Inicia o cadastro no Firebase e obtém o ID
             const inspecaoId = await iniciarNovoCadastroInspecao(dadosForm);
-            
-            // Armazena o ID no navegador para a próxima tela
-            sessionStorage.setItem('inspecaoId', inspecaoId); 
-            
-            // Redireciona para a próxima página
+            sessionStorage.setItem('inspecaoId', inspecaoId);
             window.location.href = form.action;
         } catch (error) {
             alert("Erro ao iniciar a inspeção. Por favor, tente novamente.");

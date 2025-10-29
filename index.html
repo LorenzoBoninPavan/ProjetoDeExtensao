@@ -16,6 +16,7 @@
             <h1>Formulário de Inspeção</h1>
         </div>
         <form id="inspectionForm" action="identificacao.html">
+            <button type="button" id="logoutButton" class="button" style="background-color: #dc3545; margin-bottom: 10px;">Sair</button>
             <table>
                 <tr>
                     <td colspan="2" style="text-align: center;">
@@ -37,42 +38,14 @@
                     <th>PDF</th>
                 </tr>
             </thead>
-            <tbody>
-                <tr>
-                    <td>#2121986758</td>
-                    <td>02/12/2024</td>
-                    <td>Manilha</td>
-                    <td>Pendente</td>
-                    <td>
-                        <a href="editar.html"><img src="img/editar.png" alt="Editar" title="Editar"></a>
-                    </td>
-                    <td>
-                        <img src="img/Reprovado.png" class="status-icon" alt="Reprovado" title="Reprovado">
-                    </td>
-                    <td>
-                        <img src="img/pdf.png" class="disabled" alt="PDF Indisponível" title="PDF Indisponível">
-                    </td>
-                </tr>
-                <tr>
-                    <td>#95865968590</td>
-                    <td>05/01/2025</td>
-                    <td>Corda</td>
-                    <td>Finalizado</td>
-                    <td>
-                        <img src="img/editar.png" class="disabled" alt="Editar Indisponível"
-                            title="Editar Indisponível">
-                    </td>
-                    <td>
-                        <img src="img/Aprovado.png" class="status-icon" alt="Aprovado" title="Aprovado">
-                    </td>
-                    <td>
-                        <img src="img/pdf.png" alt="Gerar PDF" title="Gerar PDF" onclick="openPDF('pdf/relatorio.docx.pdf')">
-                    </td>
-                </tr>
+            <tbody id="checklistTableBody">
+
             </tbody>
         </table>
     </div>
-    <script src="js/firebase.js"></script>
+    <script type="module" src="js/firebase.js"></script>
+    <script type="module" src="js/auth.js"></script>
+    <script type="module" src="js/index.js"></script>
 </body>
 
 </html>

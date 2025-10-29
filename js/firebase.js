@@ -1,138 +1,193 @@
-// Aqui tem a configuração do firebase
-import { initializeApp } from "firebase/app";
-import { getFirestore, collection, doc, addDoc, updateDoc, Timestamp } from "firebase/firestore";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+// firebase.js
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+import { 
+  getAuth, 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  signOut, 
+  onAuthStateChanged 
+} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+import { 
+  getFirestore, 
+  collection, 
+  doc, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  query, 
+  where, 
+  getDocs, 
+  getDoc, 
+  Timestamp 
+} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+import { 
+  getStorage, 
+  ref, 
+  uploadBytes, 
+  getDownloadURL 
+} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-storage.js";
 
 // Configuração do Firebase
 const firebaseConfig = {
-    apiKey: "AIzaSyCzCm96EItcYNk1gDhi1m4hqpRSLA_VDW8",
-    authDomain: "projetoextensao-e17d2.firebaseapp.com",
-    projectId: "projetoextensao-e17d2",
-    storageBucket: "projetoextensao-e17d2.firebasestorage.app",
-    messagingSenderId: "232178796571",
-    appId: "1:232178796571:web:74484c89a6ae5ed31d90be",
-    measurementId: "G-B795YQF10P"
+  apiKey: "AIzaSyBsA6D-8gW5m2im1MQhclAbstgCJFNzFqo",
+  authDomain: "extensaoteste-3225e.firebaseapp.com",
+  databaseURL: "https://extensaoteste-3225e-default-rtdb.firebaseio.com",
+  projectId: "extensaoteste-3225e",
+  storageBucket: "extensaoteste-3225e.firebasestorage.app",
+  messagingSenderId: "332553633501",
+  appId: "1:332553633501:web:6ccec53b5749694c14a534"
 };
 
 // Inicializa Firebase
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// Exporta o banco de dados e o storage para serem usados em outros arquivos
-export { app, db, storage };
+/**
+ * Converte arquivos de imagem em Base64
+ */
+async function converterImagensBase64(arquivos) {
+  const base64List = [];
+  for (const file of arquivos) {
+    const reader = new FileReader();
+    const base64Promise = new Promise((resolve, reject) => {
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+    });
+    reader.readAsDataURL(file);
+    base64List.push(await base64Promise);
+  }
+  return base64List;
+}
 
 /**
- * Função auxiliar para fazer upload de fotos para o Firebase Storage.
- * @param {string} caminho - O caminho base no Storage (ex: 'inspecoes/ID_DA_INSPECAO').
- * @param {Array<File>} arquivos - Array de objetos File a serem enviados.
- * @returns {Promise<Array<string>>} Promise que resolve com as URLs de download das fotos.
+ * Cria nova inspeção com dados da tela de identificação
  */
-const uploadFotos = async (caminho, arquivos) => {
-    const urls = [];
-    if (arquivos.length > 0) {
-        for (const file of arquivos) {
-            // Cria um nome único usando a data e um identificador
-            const nomeUnico = `${Date.now()}_${file.name}`;
-            const storageRef = ref(storage, `${caminho}/${nomeUnico}`);
-            await uploadBytes(storageRef, file);
-            const url = await getDownloadURL(storageRef);
-            urls.push(url);
-        }
-    }
-    return urls;
-};
+export async function iniciarNovoCadastroInspecao(userId, dados) {
+  try {
+    const fotosInputs = dados.fotos || [];
+    const arquivos = fotosInputs
+      .map(input => input.files?.[0])
+      .filter(file => !!file);
 
-// --- Funções para gerenciar o cadastro em múltiplas telas ---
+    const fotosBase64 = await converterImagensBase64(arquivos);
+
+    const colRef = collection(db, "inspecoes");
+    const docRef = await addDoc(colRef, {
+      userId: userId,
+      identificacao: {
+        tag: dados.tag,
+        serie: dados.serie,
+        data: dados.data,
+        validade: dados.validade,
+        observacao: dados.observacao,
+        fotos: fotosBase64
+      },
+      status: "em_andamento",
+      criadoEm: Timestamp.now()
+    });
+
+    console.log("Inspeção criada com ID:", docRef.id);
+    return docRef.id;
+  } catch (error) {
+    console.error("Erro ao criar inspeção:", error);
+    throw error;
+  }
+}
 
 /**
- * Inicia um novo cadastro de inspeção, salvando os dados da primeira tela
- * e as fotos associadas, e retorna o ID do novo documento.
- * @param {object} dadosTela1 - Objeto com os dados de identificação e as fotos.
- * @returns {string} O ID do novo documento criado no Firestore.
+ * Buscar inspeção por ID
  */
-export const iniciarNovoCadastroInspecao = async (dadosTela1) => {
-    try {
-        const arquivosParaUpload = dadosTela1.fotos
-            .flatMap(input => Array.from(input.files))
-            .filter(file => file);
-
-        const novaInspecaoRef = await addDoc(collection(db, "inspecoes"), {
-            identificacao: {
-                tag: dadosTela1.tag,
-                serie: dadosTela1.serie,
-                data: dadosTela1.data,
-                validade: dadosTela1.validade,
-                observacao: dadosTela1.observacao,
-                // A parte da foto talvez tenha de ser alterada pois não temos acesso ao fire store e as fotos devem ser armazenadas localmente
-                fotos: [], // Inicializa como vazio, as URLs serão adicionadas depois
-            },
-            dataCriacao: Timestamp.now(),
-            status: "identificacao_concluida",
-        });
-
-        const fotoUrls = await uploadFotos(`inspecoes/${novaInspecaoRef.id}/identificacao`, arquivosParaUpload);
-
-        await updateDoc(novaInspecaoRef, {
-            "identificacao.fotos": fotoUrls.length > 0 ? fotoUrls : ['sem_foto']
-        });
-
-        console.log("Nova inspeção iniciada com sucesso! ID:", novaInspecaoRef.id);
-        return novaInspecaoRef.id;
-    } catch (error) {
-        console.error("Erro ao iniciar nova inspeção:", error);
-        throw error;
-    }
+export const getInspecaoById = async (inspecaoId) => {
+  const docRef = doc(db, "inspecoes", inspecaoId);
+  const docSnap = await getDoc(docRef);
+  return docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } : null;
 };
 
 /**
- * Salva os dados de especificação na inspeção existente.
- * @param {string} inspecaoId - O ID da inspeção a ser atualizada.
- * @param {object} dadosTela2 - Objeto com os dados de especificação.
+ * Salvar dados da tela de especificação
  */
 export const salvarEspecificacaoInspecao = async (inspecaoId, dadosTela2) => {
-    try {
-        const inspecaoDocRef = doc(db, "inspecoes", inspecaoId);
-        await updateDoc(inspecaoDocRef, {
-            especificacao: dadosTela2,
-            status: "especificacao_concluida",
-            ultimaAtualizacao: Timestamp.now(),
-        });
-        console.log(`Especificações salvas para inspeção ID: ${inspecaoId}`);
-    } catch (error) {
-        console.error(`Erro ao salvar especificações para inspeção ID: ${inspecaoId}:`, error);
-        throw error;
-    }
+  try {
+    const inspecaoRef = doc(db, "inspecoes", inspecaoId);
+    await updateDoc(inspecaoRef, {
+      especificacao: {
+        tipo: dadosTela2.tipo || '',
+        fabricante: dadosTela2.fabricante || '',
+        capacidade: dadosTela2.capacidade || '',
+        bitola: dadosTela2.bitola || ''
+      },
+      status: "especificacao_concluida",
+      atualizadoEm: Timestamp.now()
+    });
+    console.log("Especificação salva com sucesso:", inspecaoId);
+  } catch (error) {
+    console.error("Erro ao salvar especificação:", error);
+    throw error;
+  }
 };
 
 /**
- * Finaliza a inspeção salvando os dados do checklist e fotos finais.
- * @param {string} inspecaoId - O ID da inspeção a ser finalizada.
- * @param {object} dadosTela3 - Objeto com os dados do checklist e fotos finais.
+ * Finalizar inspeção (checklist)
  */
-export const finalizarInspecao = async (inspecaoId, dadosTela3) => {
-    try {
-        const arquivosParaUpload = dadosTela3.fotos
-            .flatMap(input => Array.from(input.files))
-            .filter(file => file);
+export async function finalizarInspecao(id, dadosChecklist) {
+  try {
+    const docRef = doc(db, "inspecoes", id);
+    await updateDoc(docRef, {
+      checklist: dadosChecklist,
+      status: "finalizada",
+      finalizadoEm: Timestamp.now()
+    });
+    console.log("Inspeção finalizada:", id);
+  } catch (error) {
+    console.error("Erro ao finalizar inspeção:", error);
+    throw error;
+  }
+}
 
-        const fotoUrls = await uploadFotos(`inspecoes/${inspecaoId}/checklist`, arquivosParaUpload);
-        
-        const inspecaoDocRef = doc(db, "inspecoes", inspecaoId);
-        await updateDoc(inspecaoDocRef, {
-            checklist: {
-                itens: dadosTela3.itens,
-                comentarios: dadosTela3.comentarios,
-                fotos: fotoUrls.length > 0 ? fotoUrls : ['sem_foto'],
-                aprovacao: dadosTela3.aprovacao,
-            },
-            status: "finalizado",
-            ultimaAtualizacao: Timestamp.now(),
-        });
+/**
+ * Buscar todas as inspeções do usuário
+ */
+export const getInspecoesByUserId = async (userId) => {
+  const q = query(collection(db, "inspecoes"), where("userId", "==", userId));
+  const querySnapshot = await getDocs(q);
+  return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+};
 
-        console.log(`Cadastro finalizado para inspeção ID: ${inspecaoId}`);
-    } catch (error) {
-        console.error(`Erro ao finalizar cadastro para inspeção ID: ${inspecaoId}:`, error);
-        throw error;
-    }
+/**
+ * Deletar uma inspeção (chamada no index.js)
+ */
+export const deleteInspecao = async (inspecaoId) => {
+  try {
+    const docRef = doc(db, "inspecoes", inspecaoId);
+    await deleteDoc(docRef);
+    console.log(`Inspeção ${inspecaoId} deletada com sucesso.`);
+  } catch (error) {
+    console.error("Erro ao deletar inspeção:", error);
+    throw error;
+  }
+};
+
+// --- Autenticação ---
+export const registerUser = async (email, password) => {
+  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+  await addDoc(collection(db, "users"), {
+    uid: userCredential.user.uid,
+    email: userCredential.user.email,
+    createdAt: Timestamp.now()
+  });
+  return userCredential;
+};
+
+export const loginUser = async (email, password) =>
+  signInWithEmailAndPassword(auth, email, password);
+
+export const logoutUser = async () => signOut(auth);
+
+export {
+  auth,
+  onAuthStateChanged,
+  db,
+  storage
 };

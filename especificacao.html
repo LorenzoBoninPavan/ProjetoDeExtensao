@@ -5,121 +5,138 @@
 
 <head>
 
-    <meta charset="UTF-8">
+       
+    <meta charset="UTF-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Especificações</title>
+        <title>Especificações</title>
 
-    <link rel="stylesheet" href="css/especificacao.css">
+       
+    <link rel="stylesheet" href="css/especificacao.css">
 
 </head>
 
 <body>
 
-    <div class="menu">
+        <div class="menu">
 
-        <button type="button" class="button" onclick="history.back()">Voltar</button>
+                <button type="button" class="button" onclick="history.back()">Voltar</button>
 
-    </div>
+            </div>
 
-   
+       
 
-    <div class="form-container">
+        <div class="form-container">
 
-        <div class="title">ESPECIFICAÇÕES</div>
+                <div class="title">ESPECIFICAÇÕES</div>
 
-        <form id="especificacaoForm" action="#" method="GET">
+                <form id="especificacaoForm" action="#" method="GET">
+            <!--Inicio das Classes-->
+             <div class="form-group">
+                <label for="tipo">TIPO / CLASSE DO OBJETO</label>
+                <select id="tipo" name="tipo" onchange="displayFields(this.value)" required>
+                    <option value="">Selecione o Tipo/Classe</option>
+                    <option value="CLASSE_A">Tipo 1 (CLASSE A)</option>
+                    <option value="CLASSE_B">Tipo 2 (CLASSE B)</option>
+                    <option value="CLASSE_C">Tipo 3 (CLASSE C)</option>
+                </select>
+            </div>
+            <!--Inicio das Separações por classe-->
 
-            <div class="form-group">
+            <!--Classe A-->
+            <div id="classe-a-fields" class="classe-fields" style="display: none;">
+                <h3 class="field-title">Especificações Técnicas (Classe A)</h3>
 
-                <label for="tipo">TIPO</label>
+                <div class="form-group">
+                    <label for="fabricanteA">FABRICANTE</label>
+                    <select id="fabricanteA" name="fabricanteA" required>
+                        <option value="">Selecione o Fabricante</option>
+                        <option value="KITO">KITO</option>
+                        <option value="CM">CM</option>
+                        <option value="STAHL">STAHL</option>
+                    </select>
+                </div>
 
-                <select id="tipo" name="tipo">
+                <div class="form-group">
+                    <label for="capacidadeA">CAPACIDADE NOMINAL (t)</label>
+                    <input type="number" id="capacidadeA" name="capacidadeA" placeholder="Ex: 5.0" step="0.1" required>
+                </div>
 
-                    <option value="">Selecione um tipo</option>
+                <div class="form-group">
+                    <label for="bitolaCaboA">BITOLA/DIÂMETRO DO CABO (mm)</label>
+                    <input type="number" id="bitolaCaboA" name="bitolaCaboA" placeholder="Ex: 12.7" step="0.1">
+                </div>
 
-                    <option value="tipo1">Tipo 1</option>
+                <div class="form-group">
+                    <label for="alturaElevacaoA">ALTURA MÁXIMA DE ELEVAÇÃO (m)</label>
+                    <input type="number" id="alturaElevacaoA" name="alturaElevacaoA" placeholder="Ex: 6.0" step="0.1">
+                </div>
+            </div>
+            <!--Especeficações Classe B-->
+            <div id="classe-b-fields" class="classe-fields" style="display: none;">
+                <h3 class="field-title">Especificações de Carga (Classe B)</h3>
 
-                    <option value="tipo2">Tipo 2</option>
+                <div class="form-group">
+                    <label for="cargaB">CAPACIDADE DE CARGA (kg)</label>
+                    <input type="number" id="cargaB" name="cargaB" placeholder="Ex: 2000" required>
+                </div>
 
-                    <option value="tipo3">Tipo 3</option>
+                <div class="form-group">
+                    <label for="fatorSegurancaB">FATOR DE SEGURANÇA (FS)</label>
+                    <input type="text" id="fatorSegurancaB" name="fatorSegurancaB" placeholder="Ex: 7:1">
+                </div>
 
-                </select>
+                <div class="form-group">
+                    <label for="materialCintaB">MATERIAL DA CINTA</label>
+                    <select id="materialCintaB" name="materialCintaB">
+                        <option value="">Selecione o Material</option>
+                        <option value="poliester">Poliéster</option>
+                        <option value="nylon">Nylon</option>
+                    </select>
+                </div>
+            </div>
+            <!--Espeficação Classe C-->
+            <div id="classe-c-fields" class="classe-fields" style="display: none;">
+                <h3 class="field-title">Especificações de Material (Classe C)</h3>
 
-            </div>
+                <div class="form-group">
+                    <label for="materialC">MATERIAL / GRAU</label>
+                    <input type="text" id="materialC" name="materialC" placeholder="Ex: Aço Forjado, Grau 80" required>
+                </div>
 
-            <div class="form-group">
+                <div class="form-group">
+                    <label for="cargaTrabSeguraC">CARGA DE TRABALHO SEGURA (t)</label>
+                    <input type="number" id="cargaTrabSeguraC" name="cargaTrabSeguraC" placeholder="Ex: 3.25"
+                        step="0.01" required>
+                </div>
 
-                <label for="fabricante">FABRICANTE</label>
+                <div class="form-group">
+                    <label for="normaAplicavelC">NORMA APLICÁVEL</label>
+                    <input type="text" id="normaAplicavelC" name="normaAplicavelC"
+                        placeholder="Ex: EN 1677, ASME B30.26">
+                </div>
+            </div>
+                       
 
-                <select id="fabricante" name="fabricante">
+                        <div class="button-group">
 
-                    <option value="">Selecione um fabricante</option>
+                                <button type="reset" class="button reset">LIMPAR</button>
 
-                    <option value="fabricante1">Fabricante 1</option>
+                                <button type="submit" class="button">AVANÇAR</button>
 
-                    <option value="fabricante2">Fabricante 2</option>
+                            </div>
 
-                    <option value="fabricante3">Fabricante 3</option>
+                   
+        </form>
 
-                </select>
+            </div>
 
-            </div>
+       
 
-            <div class="form-group">
-
-                <label for="capacidade">CAPACIDADE</label>
-
-                <select id="capacidade" name="capacidade">
-
-                    <option value="">Selecione uma capacidade</option>
-
-                    <option value="capacidade1">Capacidade 1</option>
-
-                    <option value="capacidade2">Capacidade 2</option>
-
-                    <option value="capacidade3">Capacidade 3</option>
-
-                </select>
-
-            </div>
-
-            <div class="form-group">
-
-                <label for="bitola">BITOLA</label>
-
-                <select id="bitola" name="bitola">
-
-                    <option value="">Selecione uma bitola</option>
-
-                    <option value="bitola1">Bitola 1</option>
-
-                    <option value="bitola2">Bitola 2</option>
-
-                    <option value="bitola3">Bitola 3</option>
-
-                </select>
-
-            </div>
-
-           
-
-            <div class="button-group">
-
-                <button type="reset" class="button reset">LIMPAR</button>
-
-                <button type="submit" class="button">AVANÇAR</button>
-
-            </div>
-
-        </form>
-
-    </div>
-
-   
-
-    <script type="module" src="js/firebase.js"></script>
+       
+    <script type="module" src="js/firebase.js"></script>
     <script type="module" src="js/auth.js"></script>
     <script type="module" src="js/especificacao.js"></script>
 

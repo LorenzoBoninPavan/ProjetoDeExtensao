@@ -1,145 +1,148 @@
-<!--Aqui começaria as perguntas da classe especifica-->
 <!DOCTYPE html>
-
 <html lang="pt-BR">
-
 <head>
-
-       
     <meta charset="UTF-8">
-
-       
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-        <title>Especificações</title>
-
-       
+    <title>Especificações</title>
     <link rel="stylesheet" href="css/especificacao.css">
-
 </head>
-
 <body>
-
-        <div class="menu">
-
-                <button type="button" class="button" onclick="history.back()">Voltar</button>
-
-            </div>
-
-       
-
-        <div class="form-container">
-
-                <div class="title">ESPECIFICAÇÕES</div>
-
-                <form id="especificacaoForm" action="#" method="GET">
-            <!--Inicio das Classes-->
-             <div class="form-group">
+    <div class="menu">
+        <button type="button" class="button" onclick="history.back()">Voltar</button>
+    </div>
+        
+    <div class="form-container">
+        <div class="title">ESPECIFICAÇÕES</div>
+        <form id="especificacaoForm" action="#" method="GET">
+            <div class="form-group">
                 <label for="tipo">TIPO / CLASSE DO OBJETO</label>
                 <select id="tipo" name="tipo" onchange="displayFields(this.value)" required>
                     <option value="">Selecione o Tipo/Classe</option>
-                    <option value="CLASSE_A">Tipo 1 (CLASSE A)</option>
-                    <option value="CLASSE_B">Tipo 2 (CLASSE B)</option>
-                    <option value="CLASSE_C">Tipo 3 (CLASSE C)</option>
+                    <option value="cinta">Cinta</option>
+                    <option value="manilha">Manilha</option>
+                    <option value="cabo">Cabo de Aço</option>
                 </select>
             </div>
-            <!--Inicio das Separações por classe-->
-
-            <!--Classe A-->
-            <div id="classe-a-fields" class="classe-fields" style="display: none;">
-                <h3 class="field-title">Especificações Técnicas (Classe A)</h3>
+            
+            <div id="classe-cinta-fields" class="classe-fields" style="display: none;">
+                <h3 class="field-title">Especificações Cinta</h3>
 
                 <div class="form-group">
-                    <label for="fabricanteA">FABRICANTE</label>
-                    <select id="fabricanteA" name="fabricanteA" required>
+                    <label for="tipoCinta">Tipo</label>
+                    <input type="text" id="tipoCinta" name="tipoCinta" placeholder="Tubular - Anel" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="fabricanteCinta">FABRICANTE</label>
+                    <select id="fabricanteCinta" name="fabricanteCinta" required>
                         <option value="">Selecione o Fabricante</option>
-                        <option value="KITO">KITO</option>
-                        <option value="CM">CM</option>
-                        <option value="STAHL">STAHL</option>
+                        <option value="adicionamosdepois">Adicionamos depois</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="capacidadeA">CAPACIDADE NOMINAL (t)</label>
-                    <input type="number" id="capacidadeA" name="capacidadeA" placeholder="Ex: 5.0" step="0.1" required>
+                    <label for="capacidadeCinta">CAPACIDADE CMT ou WLL(ton)</label>
+                    <input type="number" id="capacidadeCinta" name="capacidadeCinta" placeholder="Ex: 5.0" step="0.1" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="bitolaCaboA">BITOLA/DIÂMETRO DO CABO (mm)</label>
-                    <input type="number" id="bitolaCaboA" name="bitolaCaboA" placeholder="Ex: 12.7" step="0.1">
-                </div>
-
-                <div class="form-group">
-                    <label for="alturaElevacaoA">ALTURA MÁXIMA DE ELEVAÇÃO (m)</label>
-                    <input type="number" id="alturaElevacaoA" name="alturaElevacaoA" placeholder="Ex: 6.0" step="0.1">
+                    <label for="comprimentoCinta">COMPRIMENTO (m)</label>
+                    <input type="number" id="comprimentoCinta" name="comprimentoCinta" placeholder="Ex: 12.7" step="0.1">
                 </div>
             </div>
-            <!--Especeficações Classe B-->
-            <div id="classe-b-fields" class="classe-fields" style="display: none;">
-                <h3 class="field-title">Especificações de Carga (Classe B)</h3>
+            
+            <div id="classe-manilha-fields" class="classe-fields" style="display: none;">
+                <h3 class="field-title">Especificações de Manilha</h3>
 
                 <div class="form-group">
-                    <label for="cargaB">CAPACIDADE DE CARGA (kg)</label>
-                    <input type="number" id="cargaB" name="cargaB" placeholder="Ex: 2000" required>
+                    <label for="tipoManilha">Tipo</label>
+                    <input type="text" id="tipoManilha" name="tipoManilha" placeholder="Curva/Reta" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="fabricanteManilha">FABRICANTE</label>
+                    <select id="fabricanteManilha" name="fabricanteManilha" required>
+                        <option value="">Selecione o Fabricante</option>
+                        <option value="adicionamosdepois">Adicionamos depois</option>
+                    </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="fatorSegurancaB">FATOR DE SEGURANÇA (FS)</label>
-                    <input type="text" id="fatorSegurancaB" name="fatorSegurancaB" placeholder="Ex: 7:1">
+                    <label for="capacidadeManilha">Capacidade CMT(WLL) (t)</label>
+                    <input type="number" id="capacidadeManilha" name="capacidadeManilha" placeholder="Ex: 17" step="0.1">
                 </div>
 
                 <div class="form-group">
-                    <label for="materialCintaB">MATERIAL DA CINTA</label>
-                    <select id="materialCintaB" name="materialCintaB">
-                        <option value="">Selecione o Material</option>
-                        <option value="poliester">Poliéster</option>
-                        <option value="nylon">Nylon</option>
+                    <label for="diametronominalManilha">Diâmetro NOMINAL (pol)</label>
+                    <input type="text" id="diametronominalManilha" name="diametronominalManilha" placeholder="Ex: 1-1/2">
+                </div>
+            </div>
+            
+            <div id="classe-cabo-fields" class="classe-fields" style="display: none;">
+                <h3 class="field-title">Especificações de Cabo de Aço</h3>
+
+                <div class="form-group">
+                    <label for="tipoCabo">Tipo</label>
+                    <input type="text" id="tipoCabo" name="tipoCabo" placeholder="Laço" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="fabricanteCabo">FABRICANTE</label>
+                    <select id="fabricanteCabo" name="fabricanteCabo" required>
+                        <option value="">Selecione o Fabricante</option>
+                        <option value="adicionamosdepois">Adicionamos depois</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="capacidadeCabo">Capacidade</label>
+                    <input type="text" id="capacidadeCabo" name="capacidadeCabo" placeholder="1,5">
+                </div>
+                
+                <div class="form-group">
+                    <label for="comprimentoCabo">Comprimento</label>
+                    <input type="text" id="comprimentoCabo" name="comprimentoCabo" placeholder="2">
+                </div>
+                
+                <div class="form-group">
+                    <label for="diametroCabo">Diâmetro(mm)</label>
+                    <input type="text" id="diametroCabo" name="diametroCabo" placeholder="1/2">
+                </div>
+
+                <h3 class="field-title">Características Complementares</h3>
+
+                <div class="form-group">
+                    <label for="terminacao1Cabo">TERMINAÇÃO 1</label>
+                    <select id="terminacao1Cabo" name="terminacao1Cabo">
+                        <option value="">Selecione a Terminação</option>
+                        <option value="soquete">Soquete</option>
+                        <option value="pomwee">Pom-Wee</option>
+                        <option value="sapatilhoreforcado">Sapatilho Reforçado</option>
+                        <option value="sapatilho">Sapatilho</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="terminacao2Cabo">TERMINAÇÃO 2</label>
+                    <select id="terminacao2Cabo" name="terminacao2Cabo">
+                        <option value="">Selecione a Terminação</option>
+                        <option value="soquete">Soquete</option>
+                        <option value="pomwee">Pom-Wee</option>
+                        <option value="sapatilhoreforcado">Sapatilho Reforçado</option>
+                        <option value="sapatilho">Sapatilho</option>
                     </select>
                 </div>
             </div>
-            <!--Espeficação Classe C-->
-            <div id="classe-c-fields" class="classe-fields" style="display: none;">
-                <h3 class="field-title">Especificações de Material (Classe C)</h3>
 
-                <div class="form-group">
-                    <label for="materialC">MATERIAL / GRAU</label>
-                    <input type="text" id="materialC" name="materialC" placeholder="Ex: Aço Forjado, Grau 80" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="cargaTrabSeguraC">CARGA DE TRABALHO SEGURA (t)</label>
-                    <input type="number" id="cargaTrabSeguraC" name="cargaTrabSeguraC" placeholder="Ex: 3.25"
-                        step="0.01" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="normaAplicavelC">NORMA APLICÁVEL</label>
-                    <input type="text" id="normaAplicavelC" name="normaAplicavelC"
-                        placeholder="Ex: EN 1677, ASME B30.26">
-                </div>
+            <div class="button-group">
+                <button type="reset" class="button reset">LIMPAR</button>
+                <button type="submit" class="button">AVANÇAR</button>
             </div>
-                       
-
-                        <div class="button-group">
-
-                                <button type="reset" class="button reset">LIMPAR</button>
-
-                                <button type="submit" class="button">AVANÇAR</button>
-
-                            </div>
-
-                   
         </form>
+    </div>
 
-            </div>
-
-       
-
-       
     <script type="module" src="js/firebase.js"></script>
     <script type="module" src="js/auth.js"></script>
     <script type="module" src="js/especificacao.js"></script>
-
 </body>
-
 </html>

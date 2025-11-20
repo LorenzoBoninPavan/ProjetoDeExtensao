@@ -1,76 +1,104 @@
 /* Geral */
 body {
+    background: linear-gradient(135deg, #000 0%, #111 100%);
+    background-size: 200% 200%;
+    animation: moveBg 8s ease infinite;
+}
+
+@keyframes moveBg {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    color: #333;
+    background-color: #000; /* fundo preto */
+    color: #fff; /* texto branco */
     margin: 0;
     padding: 0;
 }
 
+/* Container Central */
 .container {
     width: 90%;
     max-width: 1200px;
     margin: 20px auto;
     padding: 20px;
-    background-color: #fff;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
+    background-color: #111; /* preto mais claro */
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.25);
+    border-radius: 12px;
+    border: 1px solid #c30000; /* borda vermelha */
 }
 
 /* Título */
 .header {
     text-align: center;
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #eee;
+    margin-bottom: 25px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #c30000;
 }
 
 .header h1 {
-    color: #0056b3;
+    color: #c30000; /* vermelho destaque */
     font-size: 2.5em;
     margin: 0;
+    font-weight: bold;
+    text-transform: uppercase;
 }
 
-/* Botões e Formulário */
-form {
-    margin-bottom: 20px;
-}
-
-.button {
-    background-color: #28a745;
+/* Botões */
+.button,
+button,
+input[type="submit"] {
+    background-color: #c30000;
     color: white;
     padding: 12px 25px;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
     font-size: 1em;
-    transition: background-color 0.3s ease;
+    transition: 0.3s ease;
     text-transform: uppercase;
     font-weight: bold;
 }
 
-.button:hover {
-    background-color: #218838;
+.button:hover,
+button:hover,
+input[type="submit"]:hover {
+    background-color: #a00000;
+}
+
+/* Botão de sair */
+.logout-button {
+    background-color: #c30000;
+    font-weight: bold;
+    border-radius: 8px;
+    padding: 10px 20px;
+    margin-bottom: 15px;
+}
+
+.logout-button:hover {
+    background-color: #900000;
 }
 
 /* Tabelas */
-.item-table,
-form table {
+.item-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
+    color: #fff;
 }
 
 .item-table th,
-.item-table td,
-form table td {
+.item-table td {
     padding: 12px;
-    border: 1px solid #ddd;
+    border: 1px solid #333;
     text-align: center;
 }
 
 .item-table th {
-    background-color: #0056b3;
+    background-color: #c30000; /* cabeçalho vermelho */
     color: white;
     text-transform: uppercase;
     font-weight: bold;
@@ -78,26 +106,26 @@ form table td {
 }
 
 .item-table tr:nth-child(even) {
-    background-color: #f9f9f9;
+    background-color: #1a1a1a;
+}
+
+.item-table tr:nth-child(odd) {
+    background-color: #0f0f0f;
 }
 
 .item-table tr:hover {
-    background-color: #f1f1f1;
+    background-color: #222;
 }
 
 /* Ícones */
 .item-table img {
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
     vertical-align: middle;
 }
 
-.item-table a img {
-    border: none;
-}
-
 .item-table .disabled {
-    opacity: 0.5;
+    opacity: 0.4;
     cursor: not-allowed;
 }
 
@@ -106,7 +134,25 @@ form table td {
     height: 30px;
 }
 
-/* Responsividade */
+/* Botão excluir */
+.delete-button {
+    padding: 8px 15px;
+    background-color: transparent;
+    color: #c30000;
+    border: 1px solid #c30000;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.delete-button:hover {
+    background-color: #c30000;
+    color: white;
+}
+
+/* ===========================
+   RESPONSIVIDADE
+=========================== */
 @media (max-width: 768px) {
     .container {
         width: 95%;
@@ -133,57 +179,27 @@ form table td {
     }
 
     .item-table tr {
-        border: 1px solid #ccc;
+        border: 1px solid #c30000;
         margin-bottom: 15px;
         border-radius: 8px;
         overflow: hidden;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        background-color: #111;
     }
 
     .item-table td {
         border: none;
         position: relative;
-        padding-left: 50%;
+        padding-left: 55%;
         text-align: left;
     }
 
     .item-table td:before {
         content: attr(data-label);
         position: absolute;
-        left: 6px;
+        left: 10px;
         width: 45%;
-        padding-right: 10px;
         white-space: nowrap;
         font-weight: bold;
-        text-align: right;
-    }
-
-    /* Adicionando labels para cada td para mobile */
-    .item-table td:nth-of-type(1):before {
-        content: "Tag:";
-    }
-
-    .item-table td:nth-of-type(2):before {
-        content: "Data:";
-    }
-
-    .item-table td:nth-of-type(3):before {
-        content: "Item:";
-    }
-
-    .item-table td:nth-of-type(4):before {
-        content: "Status:";
-    }
-
-    .item-table td:nth-of-type(5):before {
-        content: "Editar:";
-    }
-
-    .item-table td:nth-of-type(6):before {
-        content: "Finalizado:";
-    }
-
-    .item-table td:nth-of-type(7):before {
-        content: "PDF:";
+        color: #c30000;
     }
 }

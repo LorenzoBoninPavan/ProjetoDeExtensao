@@ -6,6 +6,37 @@ function formatClasseName(classe) {
     return classe.charAt(0).toUpperCase() + classe.slice(1);
 }
 
+// NOVO: Função para validar campos obrigatórios com base na classe
+function validateFields(classe, dados) {
+    let camposFaltando = [];
+    
+    // Define os campos obrigatórios para cada classe (Adapte esta lista conforme o que for realmente obrigatório)
+    const requiredFields = {
+        // Exemplo: 'tipoCinta', 'fabricanteCinta', 'capacidadeCinta' são obrigatórios para 'cinta'
+        'cinta': ['tipoCinta', 'fabricanteCinta', 'capacidadeCinta'], 
+        'manilha': ['tipoManilha', 'fabricanteManilha'],
+        'cabo': ['tipoCabo', 'fabricanteCabo', 'capacidadeCabo', 'diametroCabo'],
+    };
+
+    if (requiredFields[classe]) {
+        // Filtra os campos obrigatórios que estão vazios
+        camposFaltando = requiredFields[classe].filter(field => {
+            // Verifica se o valor é vazio ou undefined após remover espaços (trim)
+            const valor = dados[field];
+            return !valor || (typeof valor === 'string' && valor.trim() === '');
+        });
+    }
+
+    if (camposFaltando.length > 0) {
+        // Converte os nomes dos campos para algo mais amigável se necessário (Ex: 'capacidadeCabo' -> 'Capacidade')
+        const nomesAmigaveis = camposFaltando.map(f => f.replace(classe, '').replace(/([A-Z])/g, ' $1').trim());
+        alert(`Por favor, preencha os campos obrigatórios para ${formatClasseName(classe)}:\n - ${nomesAmigaveis.join('\n - ')}`);
+        return false;
+    }
+    return true;
+}
+
+
 // Função para controlar a exibição dos blocos de campos
 function displayFields(classeSelecionada) {
     const idMap = {
@@ -56,19 +87,16 @@ document.addEventListener('DOMContentLoaded', () => {
             
             let classeDefinida = null;
 
-            // 1. Prioridade: Classe já salva no bloco de especificações (edição).
+            // Lógica robusta para determinar a classe
             if (inspection && inspection.especificacao && inspection.especificacao.classe) {
                 classeDefinida = inspection.especificacao.classe;
             } 
-            // 2. Segunda Prioridade: Classe salva no bloco de identificação.
             else if (inspection && inspection.identificacao && inspection.identificacao.classe) {
                 classeDefinida = inspection.identificacao.classe;
             }
-            // 3. Terceira Prioridade: Classe que veio na URL.
             else if (classeUrl) {
                 classeDefinida = classeUrl;
             }
-            // 4. Última Chance: Classe salva no Session Storage (Fallback).
             else if (sessionStorage.getItem('classeObjeto')) {
                 classeDefinida = sessionStorage.getItem('classeObjeto');
             }
@@ -81,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             currentClasse = classeDefinida; // Define a classe global
             
-            // 1. Exibe a classe no campo de visualização (display)
+            // 1. Exibe a classe
             const classeDisplay = document.getElementById('classeDisplay');
             if(classeDisplay) classeDisplay.value = formatClasseName(currentClasse);
             
@@ -91,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // 2. Exibe o formulário correto
             displayFields(currentClasse);
             
-            // 3. Carrega os dados salvos, se existirem
+            // 3. Carrega os dados salvos
             if (inspection && inspection.especificacao) {
                 const esp = inspection.especificacao;
 
@@ -135,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 classe: currentClasse,
             };
             
-            // Coleta de dados dinâmicos da classe
+            // Coleta de dados dinâmicos da classe (para validação e salvamento)
             if (currentClasse === 'cinta') {
                 dadosTela2.tipoCinta = document.getElementById('tipoCinta').value;
                 dadosTela2.fabricanteCinta = document.getElementById('fabricanteCinta').value;
@@ -156,12 +184,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 dadosTela2.terminacao2Cabo = document.getElementById('terminacao2Cabo').value;
             }
             
+            // --- NOVA VALIDAÇÃO MANUAL ---
+            if (!validateFields(currentClasse, dadosTela2)) {
+                return; // Impede a submissão se a validação falhar
+            }
+            // -----------------------------
 
             try {
                 console.log('1. Tentando salvar especificações para o ID:', currentInspectionId);
                 console.log('   Dados a serem salvos:', dadosTela2);
                 
-                // --- CHAMA A FUNÇÃO CORRIGIDA NO FIREBASE ---
                 await salvarEspecificacaoInspecao(currentInspectionId, dadosTela2);
                 
                 console.log('2. Especificações salvas com sucesso no Firebase.');

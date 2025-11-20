@@ -38,20 +38,21 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadInspectionData(inspecaoId) {
         try {
             const inspection = await getInspecaoById(inspecaoId);
-            if (inspection) {
+            if (inspection && inspection.identificacao) { // Verifica a sub-coleção identificacao
                 // Carrega os campos existentes
-                document.getElementById('tag').value = inspection.identificacao.tag || '';
-                // NOVO: Carregar a classe
-                document.getElementById('classe').value = inspection.identificacao.classe || ''; 
-                document.getElementById('name').value = inspection.identificacao.serie || '';
-                document.getElementById('date').value = inspection.identificacao.data || '';
-                document.getElementById('validacao').value = inspection.identificacao.validade || '';
-                document.getElementById('observacao').value = inspection.identificacao.observacao || '';
+                const idData = inspection.identificacao;
+                document.getElementById('tag').value = idData.tag || '';
+                document.getElementById('classe').value = idData.classe || ''; 
+                document.getElementById('name').value = idData.serie || '';
+                document.getElementById('date').value = idData.data || '';
+                document.getElementById('validacao').value = idData.validade || '';
+                document.getElementById('observacao').value = idData.observacao || '';
                 
-                // NOTA: Não carregamos as fotos em base64 de volta para os inputs de arquivo por questões de segurança e funcionalidade do navegador.
+                // NOTA: Não carregamos as fotos em base64 de volta para os inputs de arquivo.
             } else {
-                alert('Inspeção não encontrada.');
-                window.location.href = 'index.html';
+                // Se a inspeção existe mas não tem 'identificacao' (caso improvável, mas seguro)
+                console.log('Inspeção encontrada, mas sem dados de identificação. Iniciando novo preenchimento.');
+                currentInspectionId = inspecaoId; // Mantém o ID se ele já existia
             }
         } catch (error) {
             console.error('Erro ao carregar dados da inspeção:', error);
@@ -85,26 +86,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const dadosTela1 = {
                 tag: document.getElementById('tag').value,
-                // NOVO: Coletar a classe
                 classe: classeSelecionada, 
                 serie: document.getElementById('name').value,
                 data: document.getElementById('date').value,
                 validade: document.getElementById('validacao').value,
                 observacao: document.getElementById('observacao').value,
-                fotos: fotosBase64.filter(f => f !== null) // Filtra nulos
+                fotos: fotosBase64.filter(f => f !== null)
             };
 
             try {
                 let inspecaoId;
                 if (currentInspectionId) {
+
                     inspecaoId = currentInspectionId;
+                    // Se for edição, idealmente você usaria 'salvarIdentificacaoInspecao(inspecaoId, dadosTela1)'
                 } else {
+                    // Se for novo, inicia um novo cadastro e salva os dados da tela 1
                     inspecaoId = await iniciarNovoCadastroInspecao(currentUserId, dadosTela1);
                     console.log("Nova inspeção criada:", inspecaoId);
                 }
                 
-                // Redireciona para a ESPECIFICAÇÃO, passando o ID
-                window.location.href = `especificacao.html?id=${inspecaoId}`;
+                window.location.href = `especificacao.html?id=${inspecaoId}&classe=${classeSelecionada}`;
                 
             } catch (error) {
                 console.error('Erro ao salvar identificação:', error);

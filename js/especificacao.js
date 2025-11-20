@@ -7,16 +7,13 @@ function formatClasseName(classe) {
 }
 
 // Função para controlar a exibição dos blocos de campos
-// Esta função é chamada automaticamente pelo script principal.
 function displayFields(classeSelecionada) {
-    // Mapeamento do valor da classe para o ID do bloco no HTML
     const idMap = {
         'cinta': 'classe-cinta-fields',
         'manilha': 'classe-manilha-fields',
         'cabo': 'classe-cabo-fields',
     };
 
-    // Esconde todos os blocos de campos específicos primeiro
     const especificos = document.querySelectorAll('.classe-fields');
     especificos.forEach(div => div.style.display = 'none');
 
@@ -32,51 +29,52 @@ function displayFields(classeSelecionada) {
 document.addEventListener('DOMContentLoaded', () => {
     const especificacaoForm = document.getElementById('especificacaoForm');
     let currentInspectionId = null;
-    let currentClasse = null; // Variável para armazenar a classe da URL
+    let currentClasse = null;
 
     onAuthStateChanged(auth, (user) => {
         if (user) {
             const urlParams = new URLSearchParams(window.location.search);
             const inspecaoId = urlParams.get('id');
-            // NOVO: A classe também pode vir da URL (se for novo cadastro)
             const classeUrl = urlParams.get('classe'); 
 
             if (inspecaoId) {
                 currentInspectionId = inspecaoId;
-                
-                // Prioridade 1: Tentar carregar dados salvos.
                 loadEspecificacaoData(inspecaoId, classeUrl); 
 
             } else {
-                alert('ID da inspeção não encontrado. Retornando.');
-                window.location.href = 'identificacao.html'; // Volta para a tela de identificação
+                alert('ID da inspeção não encontrado na URL. Retornando ao início.');
+                window.location.href = 'identificacao.html'; 
             }
         } else {
-            // Redireciona para o login se não estiver autenticado
             window.location.href = 'login.html';
         }
     });
 
-    // Função para carregar dados do Firebase
     async function loadEspecificacaoData(inspecaoId, classeUrl) {
         try {
             const inspection = await getInspecaoById(inspecaoId);
             
-            // Determina a classe: Preferencialmente da especificação salva, senão da identificação, senão da URL.
-            let classeDefinida = classeUrl;
+            let classeDefinida = null;
 
-            // Se existir dados de identificação e for um novo cadastro
-            if (inspection.identificacao && inspection.identificacao.classe) {
-                classeDefinida = inspection.identificacao.classe;
-            }
-
-            // Se já houver especificações salvas
+            // 1. Prioridade: Classe já salva no bloco de especificações (edição).
             if (inspection && inspection.especificacao && inspection.especificacao.classe) {
                 classeDefinida = inspection.especificacao.classe;
+            } 
+            // 2. Segunda Prioridade: Classe salva no bloco de identificação.
+            else if (inspection && inspection.identificacao && inspection.identificacao.classe) {
+                classeDefinida = inspection.identificacao.classe;
+            }
+            // 3. Terceira Prioridade: Classe que veio na URL.
+            else if (classeUrl) {
+                classeDefinida = classeUrl;
+            }
+            // 4. Última Chance: Classe salva no Session Storage (Fallback).
+            else if (sessionStorage.getItem('classeObjeto')) {
+                classeDefinida = sessionStorage.getItem('classeObjeto');
             }
             
             if (!classeDefinida) {
-                 alert('Classe do objeto não definida na inspeção. Retornando.');
+                 alert('Classe do objeto não definida na inspeção. Retornando para o início do cadastro.');
                  window.location.href = `identificacao.html?id=${inspecaoId}`;
                  return;
             }
@@ -84,8 +82,11 @@ document.addEventListener('DOMContentLoaded', () => {
             currentClasse = classeDefinida; // Define a classe global
             
             // 1. Exibe a classe no campo de visualização (display)
-            document.getElementById('classeDisplay').value = formatClasseName(currentClasse);
-            document.getElementById('classeHidden').value = currentClasse; // Salva no hidden para uso fácil
+            const classeDisplay = document.getElementById('classeDisplay');
+            if(classeDisplay) classeDisplay.value = formatClasseName(currentClasse);
+            
+            const classeHidden = document.getElementById('classeHidden');
+            if(classeHidden) classeHidden.value = currentClasse;
             
             // 2. Exibe o formulário correto
             displayFields(currentClasse);
@@ -117,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error('Erro ao carregar dados de especificação:', error);
-            alert('Erro ao carregar dados de especificação.');
+            alert('Erro ao carregar dados de especificação: Verifique a conexão ou o ID.');
         }
     }
 
@@ -130,12 +131,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Cria o objeto base para salvar
             const dadosTela2 = {
-                classe: currentClasse, // Usa a classe carregada no DOMContentLoaded
+                classe: currentClasse,
             };
             
-            // Coleta os dados específicos da classe selecionada
+            // Coleta de dados dinâmicos da classe
             if (currentClasse === 'cinta') {
                 dadosTela2.tipoCinta = document.getElementById('tipoCinta').value;
                 dadosTela2.fabricanteCinta = document.getElementById('fabricanteCinta').value;
@@ -158,17 +158,22 @@ document.addEventListener('DOMContentLoaded', () => {
             
 
             try {
-                await salvarEspecificacaoInspecao(currentInspectionId, dadosTela2);
-                sessionStorage.setItem('inspecaoId', currentInspectionId); 
+                console.log('1. Tentando salvar especificações para o ID:', currentInspectionId);
+                console.log('   Dados a serem salvos:', dadosTela2);
                 
-                alert('Especificações salvas com sucesso!');
+                // --- CHAMA A FUNÇÃO CORRIGIDA NO FIREBASE ---
+                await salvarEspecificacaoInspecao(currentInspectionId, dadosTela2);
+                
+                console.log('2. Especificações salvas com sucesso no Firebase.');
+
+                sessionStorage.setItem('inspecaoId', currentInspectionId); 
                 
                 // Redireciona para o checklist, passando o ID e a CLASSE
                 window.location.href = `checklist.html?id=${currentInspectionId}&classe=${currentClasse}`;
 
             } catch (error) {
-                console.error('Erro ao salvar especificações:', error);
-                alert('Erro ao salvar especificações: ' + error.message);
+                console.error('ERRO CRÍTICO AO SALVAR ESPECIFICAÇÕES:', error);
+                alert('Erro ao salvar especificações. Verifique o console para detalhes.');
             }
         });
     }

@@ -1,25 +1,38 @@
-/* sucesso.css */
+body {
+    background: linear-gradient(135deg, #000 0%, #111 100%);
+    background-size: 200% 200%;
+    animation: moveBg 8s ease infinite;
+}
+
+@keyframes moveBg {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
 
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
+    background-color: #000; /* fundo preto */
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
     margin: 0;
+    color: #fff;
 }
 
 .sucesso-container {
     text-align: center;
-    background-color: #fff;
+    background-color: #111; /* preto mais claro */
     padding: 40px 60px;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.25);
+    border: 1px solid #c30000; /* borda vermelha */
 }
 
+/* Mensagem de sucesso */
 .mensagem {
-    color: #28a745;
+    color: #c30000; /* vermelho da identidade */
     margin-bottom: 30px;
 }
 
@@ -27,17 +40,21 @@ body {
     font-size: 4em;
     font-weight: bold;
     line-height: 1;
+    color: #c30000; /* ícone vermelho */
 }
 
 .mensagem h1 {
     font-size: 2em;
     margin-top: 10px;
+    color: #fff;
 }
 
+/* Botões */
 .botoes-acao {
     display: flex;
     flex-direction: column;
     gap: 15px;
+    margin-top: 25px;
 }
 
 .botao-pdf,
@@ -46,28 +63,32 @@ body {
     font-size: 1.1em;
     font-weight: bold;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
+    transition: 0.3s ease;
+    text-transform: uppercase;
 }
 
+/* Botão PDF */
 .botao-pdf {
-    background-color: #dc3545;
+    background-color: #c30000;
     color: white;
 }
 
 .botao-pdf:hover {
-    background-color: #c82333;
+    background-color: #a00000;
     transform: translateY(-2px);
 }
 
+/* Botão Finalizar / Voltar */
 .botao-finalizar {
-    background-color: #007bff;
-    color: white;
+    background-color: #222;
+    color: #fff;
+    border: 1px solid #c30000;
 }
 
 .botao-finalizar:hover {
-    background-color: #0056b3;
+    background-color: #333;
     transform: translateY(-2px);
 }
 

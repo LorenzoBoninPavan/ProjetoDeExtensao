@@ -1,17 +1,15 @@
 // js/pdf.js
 import { getInspecaoById } from './firebase.js';
+import { CHECKLIST_DATA } from './checklist-data.js'; // já criado anteriormente
 
-// caminho local da imagem enviada (fornecido pelo dev). Eles vão transformar esse path em URL.
-// Se quiser usar, mantenha; senão fica apenas como fallback.
-const SAMPLE_IMAGE_PATH = '/mnt/data/6efa9918-c5c3-4c33-9717-3eb9654cc9cd.png';
+// Caminho do logotipo (conforme confirmado)
+const LOGO_URL = '/img/Logotipo.jpg';
 
-/**
- * Converte uma URL (ou dataURL) para dataURL (base64) para uso no jsPDF.
- */
+// Converte URL (ou dataURL) para dataURL (base64)
 async function urlToDataUrl(url) {
   try {
     const res = await fetch(url);
-    if (!res.ok) throw new Error('Imagem não encontrada');
+    if (!res.ok) throw new Error('Imagem não encontrada: ' + url);
     const blob = await res.blob();
     return await new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -25,6 +23,13 @@ async function urlToDataUrl(url) {
   }
 }
 
+function getImageFormatFromDataUrl(dataUrl) {
+  if (!dataUrl) return 'JPEG';
+  if (dataUrl.startsWith('data:image/png')) return 'PNG';
+  if (dataUrl.startsWith('data:image/jpeg') || dataUrl.startsWith('data:image/jpg')) return 'JPEG';
+  return 'JPEG';
+}
+
 /**
  * Gera PDF da inspeção (client-side)
  * - id: id do documento no Firestore
@@ -34,57 +39,91 @@ export async function generatePdfFromInspection(id) {
     const inspection = await getInspecaoById(id);
     if (!inspection) throw new Error('Inspeção não encontrada: ' + id);
 
-    // acessa jsPDF via global (adicionado pelo script UMD)
     const { jsPDF: JsPDF } = window.jspdf;
-    const doc = new JsPDF('landscape', 'pt', 'a4'); // unidades em pontos
+    const doc = new JsPDF('landscape', 'pt', 'a4');
 
-    // medidas e posicoes básicas
     const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
     const margin = 36;
-    let y = margin;
 
-    // --- Cabeçalho ---
-    // opcional: inserir logo (se existir)
-    const tryLogo = await urlToDataUrl(SAMPLE_IMAGE_PATH).catch(() => null);
-    const logoW = 80;
-    const logoH = 50;
-    if (tryLogo) {
-      doc.addImage(tryLogo, 'PNG', margin, y, logoW, logoH);
+    // Espaço reservado para assinaturas (altura fixa)
+    const signW = 150;
+    const signH = 60;
+    const signGap = 30;
+    const signatureReserveHeight = signH + 40; // espaço que o conteúdo não deve ocupar (inclui margem)
+
+    // Estado de posição vertical corrente
+    let currentY = 0;
+
+    // Adiciona cabeçalho (logo + título + data) — chama também em novas páginas
+    async function drawHeader() {
+      // Se for a primeira página, não chamar addPage.
+      // Limpa/define y inicial baseado no cabeçalho
+      const logoData = await urlToDataUrl(LOGO_URL).catch(() => null);
+      const logoW = 90;
+      const logoH = 55;
+      const headerTop = 20;
+
+      if (logoData) {
+        const fmt = getImageFormatFromDataUrl(logoData);
+        try { doc.addImage(logoData, fmt, margin, headerTop, logoW, logoH); } catch (e) { /* ignora */ }
+      }
+
+      // Título central
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Registro de Inspeção', pageWidth / 2, headerTop + 25, { align: 'center' });
+
+      // Data à direita (pega do objeto)
+      const dataText = inspection.identificacao?.data || '';
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Data: ${dataText}`, pageWidth - margin, headerTop + 10, { align: 'right' });
+
+      // Define currentY após cabeçalho para começar conteúdo
+      currentY = headerTop + 70;
     }
-    // título central
-    doc.setFontSize(18);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Registro de Inspeção', pageWidth / 2, y + 18, { align: 'center' });
 
-    // data (da identificação)
-    const dataText = inspection.identificacao?.data || '';
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Data: ${dataText}`, pageWidth - margin, y + 10, { align: 'right' });
+    // Adiciona nova página e redesenha cabeçalho
+    async function addNewPage() {
+      doc.addPage();
+      await drawHeader();
+    }
 
-    y += 70;
+    // Verifica se há espaço suficiente; se não houver, cria nova página
+    async function ensureSpace(requiredHeight) {
+      const usableHeight = pageHeight - margin - signatureReserveHeight;
+      if (currentY + requiredHeight > usableHeight) {
+        await addNewPage();
+      }
+    }
 
-    // --- Caixa: Especificação (esquerda) e Identificação (direita) ---
+    // Inicia primeira página com cabeçalho
+    await drawHeader();
+
+    // ------------------------
+    // ESPECIFICAÇÃO E IDENTIFICAÇÃO
+    // ------------------------
     const boxW = (pageWidth - margin * 2 - 20) / 2;
     const boxH = 110;
     const leftX = margin;
     const rightX = margin + boxW + 20;
 
-    // retângulos
-    doc.setDrawColor(0);
-    doc.rect(leftX, y, boxW, boxH);   // Especificação
-    doc.rect(rightX, y, boxW, boxH);  // Identificação
+    // Garantir espaço para caixas
+    await ensureSpace(boxH + 10);
 
-    // titles
+    doc.setDrawColor(0);
+    doc.rect(leftX, currentY, boxW, boxH);   // Especificação
+    doc.rect(rightX, currentY, boxW, boxH);  // Identificação
+
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text('Especificação', leftX + 8, y + 16);
-    doc.text('Identificação', rightX + 8, y + 16);
+    doc.text('Especificação', leftX + 8, currentY + 16);
+    doc.text('Identificação', rightX + 8, currentY + 16);
 
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
 
-    // preencher Especificação (usa o objeto inspection.especificacao)
     const esp = inspection.especificacao || {};
     const specLines = [
       ['Tipo', esp.tipoCinta || esp.tipoCabo || esp.tipoManilha || esp.classe || ''],
@@ -92,14 +131,14 @@ export async function generatePdfFromInspection(id) {
       ['Capacidade', esp.capacidadeCinta || esp.capacidadeCabo || esp.capacidadeManilha || ''],
       ['Comprimento/Bitola', esp.comprimentoCinta || esp.comprimentoCabo || esp.diametroCabo || esp.bitola || '']
     ];
-    let lineY = y + 36;
+
+    let lineY = currentY + 36;
     specLines.forEach(([label, value]) => {
       doc.text(`${label}:`, leftX + 8, lineY);
       doc.text(String(value || ''), leftX + 130, lineY);
       lineY += 16;
     });
 
-    // preencher Identificação (inspection.identificacao)
     const idf = inspection.identificacao || {};
     const idLines = [
       ['Tag Aplicada', idf.tag || ''],
@@ -108,105 +147,236 @@ export async function generatePdfFromInspection(id) {
       ['Validade', idf.validade || ''],
       ['Observação', idf.observacao || '']
     ];
-    lineY = y + 36;
+
+    lineY = currentY + 36;
     idLines.forEach(([label, value]) => {
       doc.text(`${label}:`, rightX + 8, lineY);
-      // quebra simples se muito longo
       const tx = doc.splitTextToSize(String(value || ''), boxW - 140);
       doc.text(tx, rightX + 130, lineY);
-      lineY += 16 * (tx.length);
+      lineY += 16 * tx.length;
     });
 
-    y += boxH + 10;
+    currentY += boxH + 18;
 
-    // --- Fotos (duas lado a lado) ---
+    // ------------------------
+    // FOTOS PRINCIPAIS (2 lado a lado quando couber)
+    // ------------------------
     const photos = (inspection.identificacao?.fotos || inspection.fotos || []).slice(0, 2);
-    const photoW = 200;
-    const photoH = 120;
-    const photoX1 = margin;
-    const photoX2 = margin + photoW + 20;
+    // Definir largura máxima por foto baseada no espaço horizontal disponível
+    const maxPhotoCols = 2;
+    const gutter = 20;
+    const colWidth = Math.min(250, (pageWidth - margin * 2 - gutter) / maxPhotoCols); // limita largura
+    const photoHMax = 140;
+
+    // garantir espaço para as fotos
+    await ensureSpace(photoHMax + 10);
+
     if (photos.length > 0) {
-      for (let i = 0; i < photos.length; i++) {
-        const p = photos[i];
-        // p pode ser dataURL ou URL no Firebase
-        const dataUrl = p.startsWith('data:') ? p : await urlToDataUrl(p).catch(() => null);
-        if (dataUrl) {
-          const x = i === 0 ? photoX1 : photoX2;
-          doc.addImage(dataUrl, 'JPEG', x, y, photoW, photoH);
+      for (let i = 0; i < maxPhotoCols; i++) {
+        const x = margin + i * (colWidth + gutter);
+        if (i < photos.length) {
+          const p = photos[i];
+          const dataUrl = p.startsWith('data:') ? p : await urlToDataUrl(p).catch(() => null);
+          if (dataUrl) {
+            const img = new Image();
+            img.src = dataUrl;
+            // calcular escala mantendo proporção
+            await new Promise(resolve => {
+              img.onload = () => {
+                const ratio = img.width / img.height || 1;
+                let w = colWidth;
+                let h = w / ratio;
+                if (h > photoHMax) {
+                  h = photoHMax;
+                  w = h * ratio;
+                }
+                const fmt = getImageFormatFromDataUrl(dataUrl);
+                try { doc.addImage(dataUrl, fmt, x, currentY, w, h); } catch (e) { /* ignora */ }
+                resolve();
+              };
+              img.onerror = () => resolve();
+            });
+          } else {
+            // caixa vazia
+            doc.rect(x, currentY, colWidth, photoHMax);
+            doc.text('Foto não disponível', x + colWidth / 2, currentY + photoHMax / 2, { align: 'center' });
+          }
         } else {
-          // caixa vazia com label
-          const x = i === 0 ? photoX1 : photoX2;
-          doc.rect(x, y, photoW, photoH);
-          doc.text('Foto não disponível', x + photoW/2, y + photoH/2, { align: 'center' });
+          doc.rect(x, currentY, colWidth, photoHMax);
+          doc.text(`Foto ${i + 1}`, x + colWidth / 2, currentY + photoHMax / 2, { align: 'center' });
         }
       }
     } else {
-      // se não houver fotos, desenha duas caixas vazias com labels
-      doc.rect(photoX1, y, photoW, photoH);
-      doc.text('Foto 1', photoX1 + photoW/2, y + photoH/2, { align: 'center' });
-      doc.rect(photoX2, y, photoW, photoH);
-      doc.text('Foto 2', photoX2 + photoW/2, y + photoH/2, { align: 'center' });
+      // caixas vazias
+      for (let i = 0; i < maxPhotoCols; i++) {
+        const x = margin + i * (colWidth + gutter);
+        doc.rect(x, currentY, colWidth, photoHMax);
+        doc.text(`Foto ${i + 1}`, x + colWidth / 2, currentY + photoHMax / 2, { align: 'center' });
+      }
     }
 
-    y += photoH + 18;
+    currentY += photoHMax + 18;
 
-    // --- Tabela de Itens / Perguntas (usa as chaves como "pergunta", conforme pedido B) ---
-    const itensObj = inspection.itens || {};
-    const rows = Object.keys(itensObj).map(key => {
-      return [key, String(itensObj[key] ?? '')];
-    });
+    // ------------------------
+    // TABELA CHECKLIST (usando autoTable com margem inferior reservada para assinaturas)
+    // ------------------------
+    // Preparar perguntas + respostas com base em CHECKLIST_DATA
+    const classe = inspection.checklist?.classe || inspection.especificacao?.classe || null;
+    const respostas = inspection.checklist?.itens || {};
+    const perguntasRows = [];
 
-    if (rows.length === 0) {
-      // fallback: se não tiver "itens", tenta pegar checklist ou perguntas em outro lugar
-      doc.text('Nenhum item encontrado para o checklist.', margin, y);
-      y += 18;
-    } else {
-      // montar tabela com autoTable
-      doc.autoTable({
-        startY: y,
-        margin: { left: margin, right: margin },
-        head: [['Pergunta', 'Resposta']],
-        body: rows,
-        styles: { fontSize: 10, cellPadding: 6 },
-        headStyles: { fillColor: [200, 200, 200] },
-        columnStyles: {
-          0: { cellWidth: 300 }, // pergunta (chave)
-          1: { cellWidth: 200 }  // resposta
-        },
-        theme: 'grid'
+    if (classe && CHECKLIST_DATA[classe]) {
+      // main
+      CHECKLIST_DATA[classe].main.forEach((p, idx) => {
+        const key = `item_${classe}_main_${idx + 1}`;
+        perguntasRows.push([p, String(respostas[key] ?? '')]);
       });
-      y = doc.lastAutoTable.finalY + 12;
+      // terminacao (se existir)
+      if (Array.isArray(CHECKLIST_DATA[classe].terminacao) && CHECKLIST_DATA[classe].terminacao.length > 0) {
+        CHECKLIST_DATA[classe].terminacao.forEach((p, idx) => {
+          const key = `item_${classe}_term_${idx + 1}`;
+          perguntasRows.push([p, String(respostas[key] ?? '')]);
+        });
+      }
+    } else {
+      // fallback se não houver classe
+      Object.keys(respostas).forEach(k => perguntasRows.push([k, String(respostas[k])]));
     }
 
-    // --- Assinaturas (três caixas) ---
-    const assinaturas = inspection.assinaturas || {}; // caso tenha
-    const signW = 150;
-    const signH = 60;
-    const gap = 30;
-    const totalWidth = signW * 3 + gap * 2;
-    let startX = (pageWidth - totalWidth) / 2;
-    const signY = doc.internal.pageSize.getHeight() - margin - signH - 10;
+    if (perguntasRows.length === 0) {
+      doc.text('Nenhum item encontrado para o checklist.', margin, currentY);
+      currentY += 18;
+    } else {
+      // autoTable: reservar espaço inferior para assinaturas, para não desenhar a tabela sobre as assinaturas
+      // definimos margin.bottom = signatureReserveHeight para que a tabela interrompa antes do rodapé
+      doc.autoTable({
+        startY: currentY,
+        margin: { left: margin, right: margin, bottom: signatureReserveHeight },
+        head: [['Pergunta', 'Resposta']],
+        body: perguntasRows,
+        styles: { fontSize: 10, cellPadding: 6, overflow: 'linebreak' },
+        headStyles: { fillColor: [220, 220, 220] },
+        columnStyles: { 0: { cellWidth: pageWidth * 0.65 }, 1: { cellWidth: pageWidth * 0.2 } },
+        theme: 'grid',
+        // Ajuste: o autoTable gerencia paginação automaticamente respeitando margin.bottom
+      });
 
-    // desenha três caixas e tenta inserir imagens se existirem
+      // Atualiza currentY para posição final da tabela (ou início do próximo bloco)
+      currentY = doc.lastAutoTable.finalY + 12;
+    }
+
+    // ------------------------
+    // FOTOS DO CHECKLIST (ex: 3 fotos)
+    // ------------------------
+    const fotosChecklist = inspection.checklist?.fotos || [];
+
+    if (fotosChecklist.length > 0) {
+      // Antes de adicionar fotos, garantir que exista espaço suficiente (cada linha de fotos 160px)
+      const fotoRowHeight = 160;
+      await ensureSpace(20 + fotoRowHeight); // título + 1 linha de fotos
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.text('Fotos do Checklist:', margin, currentY);
+      currentY += 18;
+
+      // Tentamos colocar 3 fotos por linha se couber
+      const maxCols = 3;
+      const spacing = 16;
+      const availableWidth = pageWidth - margin * 2;
+      const colW = (availableWidth - spacing * (maxCols - 1)) / maxCols;
+      let x = margin;
+      let rowHeightUsed = 0;
+
+      for (let i = 0; i < fotosChecklist.length; i++) {
+        const f = fotosChecklist[i];
+        const dataUrl = f.startsWith('data:') ? f : await urlToDataUrl(f).catch(() => null);
+
+        // Se não houver espaço horizontal para mais fotos, quebra de linha automática
+        if ((i % maxCols) === 0) {
+          // check espaço vertical para nova linha de fotos
+          await ensureSpace(rowHeightUsed + 160);
+          x = margin;
+        }
+
+        if (dataUrl) {
+          // calcular proporção usando Image
+          await new Promise(resolve => {
+            const img = new Image();
+            img.src = dataUrl;
+            img.onload = () => {
+              const ratio = img.width / img.height || 1;
+              let w = colW;
+              let h = w / ratio;
+              if (h > 140) { h = 140; w = h * ratio; }
+              const fmt = getImageFormatFromDataUrl(dataUrl);
+              try { doc.addImage(dataUrl, fmt, x, currentY, w, h); } catch (e) { /* ignora */ }
+              if (h > rowHeightUsed) rowHeightUsed = h;
+              resolve();
+            };
+            img.onerror = () => resolve();
+          });
+        } else {
+          doc.rect(x, currentY, colW, 140);
+        }
+
+        x += colW + spacing;
+        // se terminou uma linha (ou ultima foto), avança currentY
+        if ((i % maxCols) === (maxCols - 1) || i === fotosChecklist.length - 1) {
+          currentY += (rowHeightUsed || 140) + 12;
+          rowHeightUsed = 0;
+        }
+      }
+    }
+
+    // ------------------------
+    // ASSINATURAS (sempre na parte inferior da última página)
+    // ------------------------
+    // Verifica se existe espaço restante na página atual para colocar as assinaturas no rodapé.
+    // Se não couber, cria nova página e desenha o header novamente.
+    const neededForSignatures = signH + 20;
+    const usableHeightNow = pageHeight - margin;
+    if (currentY + neededForSignatures > usableHeightNow) {
+      await addNewPage();
+      // currentY já definido pelo header
+    }
+
+    // Calcular posição das assinaturas na página atual (rodapé)
+    const totalSignWidth = signW * 3 + signGap * 2;
+    const startX = (pageWidth - totalSignWidth) / 2;
+    const signY = pageHeight - margin - signH - 10;
+
+    const assinaturas = inspection.assinaturas || {};
     const signKeys = ['assinatura1', 'assinatura2', 'assinatura3'];
+
     for (let i = 0; i < 3; i++) {
       const key = signKeys[i];
-      const x = startX + i * (signW + gap);
+      const x = startX + i * (signW + signGap);
       doc.rect(x, signY, signW, signH);
-      const signUrl = assinaturas[key] || assinaturas[`ass${i+1}`] || null;
+
+      const signUrl = assinaturas[key] || assinaturas[`ass${i + 1}`] || null;
       if (signUrl) {
-        const dataUrl = signUrl.startsWith('data:') ? signUrl : await urlToDataUrl(signUrl).catch(()=>null);
+        const dataUrl = signUrl.startsWith('data:') ? signUrl : await urlToDataUrl(signUrl).catch(() => null);
         if (dataUrl) {
-          doc.addImage(dataUrl, 'PNG', x + 8, signY + 8, signW - 16, signH - 16);
+          try {
+            const fmt = getImageFormatFromDataUrl(dataUrl);
+            doc.addImage(dataUrl, fmt, x + 8, signY + 8, signW - 16, signH - 16);
+          } catch (e) {
+            // caso não consiga inserir imagem, escreve texto
+            doc.setFontSize(10);
+            doc.text(`Assinatura ${i + 1}`, x + signW / 2, signY + signH / 2, { align: 'center' });
+          }
         } else {
-          doc.text('Assinatura', x + signW/2, signY + signH/2, { align: 'center' });
+          doc.setFontSize(10);
+          doc.text(`Assinatura ${i + 1}`, x + signW / 2, signY + signH / 2, { align: 'center' });
         }
       } else {
-        doc.text(`Assinatura ${i+1}`, x + signW/2, signY + signH/2, { align: 'center' });
+        doc.setFontSize(10);
+        doc.text(`Assinatura ${i + 1}`, x + signW / 2, signY + signH / 2, { align: 'center' });
       }
     }
 
-    // finaliza e salva
+    // salva o PDF
     doc.save(`inspecao_${id}.pdf`);
     return true;
   } catch (error) {

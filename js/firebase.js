@@ -111,16 +111,13 @@ export const getInspecaoById = async (inspecaoId) => {
 export const salvarEspecificacaoInspecao = async (inspecaoId, dadosTela2) => {
   try {
     const inspecaoRef = doc(db, "inspecoes", inspecaoId);
+
     await updateDoc(inspecaoRef, {
-      especificacao: {
-        tipo: dadosTela2.tipo || '',
-        fabricante: dadosTela2.fabricante || '',
-        capacidade: dadosTela2.capacidade || '',
-        bitola: dadosTela2.bitola || ''
-      },
+      especificacao: dadosTela2, // <-- salva tudo corretamente!
       status: "especificacao_concluida",
       atualizadoEm: Timestamp.now()
     });
+
     console.log("Especificação salva com sucesso:", inspecaoId);
   } catch (error) {
     console.error("Erro ao salvar especificação:", error);

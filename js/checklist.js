@@ -1,50 +1,121 @@
-// checklist.js
+// js/checklist.js
 import { auth, onAuthStateChanged, finalizarInspecao } from './firebase.js';
+import { CHECKLIST_DATA } from './checklist-data.js';
 
-onAuthStateChanged(auth, (user) => {
-    if (!user) {
-        window.location.href = 'login.html';
-    }
-});
+// ------------------------------
+// GERA HTML DAS PERGUNTAS
+// ------------------------------
+function generateChecklistRows(questions, prefix, classe) {
+    return questions.map((question, index) => {
+        const inputName = `item_${classe}_${prefix}_${index + 1}`;
+        return `
+            <tr>
+                <td>${question}</td>
+                <td><input type="radio" name="${inputName}" value="na" required></td>
+                <td><input type="radio" name="${inputName}" value="sim" required></td>
+                <td><input type="radio" name="${inputName}" value="nao" required></td>
+            </tr>
+        `;
+    }).join('');
+}
 
-document.addEventListener('DOMContentLoaded', function () {
-    const inspecaoId = sessionStorage.getItem('inspecaoId');
+// ------------------------------
+// RENDERIZA CHECKLIST NA TELA
+// ------------------------------
+function renderChecklist(classe) {
+    const data = CHECKLIST_DATA[classe];
 
-    if (!inspecaoId) {
-        alert("Erro: ID da inspeção não encontrado. Retornando ao início.");
-        window.location.href = 'identificacao.html';
+    if (!data) {
+        alert("Checklist para a classe não encontrado!");
         return;
     }
 
-    const form = document.getElementById('checklistForm');
+    // Checklist principal
+    document.getElementById('checklist-body').innerHTML =
+        generateChecklistRows(data.main, "main", classe);
 
-    form.addEventListener('submit', async function (event) {
-        event.preventDefault();
+    // Checklist de terminação
+    const termContainer = document.getElementById('terminacao-checklist-container');
+    const termBody = document.getElementById('terminacao-checklist-body');
 
-        // Coleta os dados dos itens
-        const checklistItems = [];
-        for (let i = 1; i <= 8; i++) {
-            const item = document.querySelector(`input[name="item${i}"]:checked`);
-            checklistItems.push({
-                item: i,
-                resposta: item ? item.value : null
-            });
+    if (data.terminacao.length > 0) {
+        termContainer.style.display = "block";
+        termBody.innerHTML =
+            generateChecklistRows(data.terminacao, "term", classe);
+    } else {
+        termContainer.style.display = "none";
+    }
+}
+
+// ------------------------------
+// VERIFICA LOGIN
+// ------------------------------
+onAuthStateChanged(auth, (user) => {
+    if (!user) window.location.href = "login.html";
+});
+
+// ------------------------------
+// LÓGICA PRINCIPAL DA PÁGINA
+// ------------------------------
+document.addEventListener("DOMContentLoaded", () => {
+
+    // --- RECUPERA ID E CLASSE ---
+    const params = new URLSearchParams(window.location.search);
+    const idURL = params.get("id");
+    const classe = params.get("classe")?.toLowerCase();
+
+    const finalId = idURL || sessionStorage.getItem("inspecaoId");
+
+    if (!finalId || !classe) {
+        alert("Erro ao carregar inspeção. ID ou classe ausentes.");
+        window.location.href = "identificacao.html";
+        return;
+    }
+
+    // Renderiza perguntas
+    renderChecklist(classe);
+
+    // Formulário
+    const form = document.getElementById("checklistForm");
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        // ------------------------------
+        // COLETAR RESPOSTAS
+        // ------------------------------
+        const checklistItems = {};
+        const elements = form.elements;
+
+        for (let el of elements) {
+            if (el.type === "radio" && el.name.startsWith("item_") && el.checked) {
+                checklistItems[el.name] = el.value;
+            }
         }
 
-        const comentarios = document.querySelector('#comentarios').value;
-        const aprovacao = document.querySelector('input[name="approval"]:checked');
+        // Comentários
+        const comentarios = document.getElementById("comentarios").value;
 
+        // Aprovação
+        const aprovacao = document.querySelector('input[name="approval"]:checked');
+        if (!aprovacao) {
+            alert("Selecione se está Aprovado ou Reprovado.");
+            return;
+        }
+
+        // ------------------------------
+        // FOTOS DO CHECKLIST
+        // ------------------------------
         const fotosInputs = [
-            document.getElementById('photo1'),
-            document.getElementById('photo2'),
-            document.getElementById('photo3')
+            document.getElementById("photo1"),
+            document.getElementById("photo2"),
+            document.getElementById("photo3"),
         ];
 
-        // Converte as fotos em Base64
         const fotosBase64 = await Promise.all(
-            fotosInputs.map(input => {
+            fotosInputs.map((input) => {
                 const file = input.files[0];
-                return new Promise(resolve => {
+                return new Promise((resolve) => {
                     if (!file) return resolve(null);
                     const reader = new FileReader();
                     reader.onload = () => resolve(reader.result);
@@ -54,20 +125,36 @@ document.addEventListener('DOMContentLoaded', function () {
             })
         );
 
+        // ------------------------------
+        // OBJETO FINAL
+        // ------------------------------
         const dadosTela3 = {
+            classe,
             itens: checklistItems,
-            comentarios: comentarios,
-            aprovacao: aprovacao ? aprovacao.value : null,
-            fotos: fotosBase64.filter(f => f !== null)
+            comentarios,
+            aprovacao: aprovacao.value,
+            fotos: fotosBase64.filter((f) => f !== null),
         };
 
+        // ------------------------------
+        // SALVAR NO FIREBASE
+        // ------------------------------
         try {
-            await finalizarInspecao(inspecaoId, dadosTela3);
-            sessionStorage.removeItem('inspecaoId');
-            window.location.href = 'sucesso.html';
+            await finalizarInspecao(finalId, dadosTela3);
+
+            // Salva o ID para gerar o PDF na próxima tela
+            sessionStorage.setItem("lastInspectionId", finalId);
+
+            // Remove ID temporário usado no fluxo
+            sessionStorage.removeItem("inspecaoId");
+
+            alert("Inspeção finalizada com sucesso!");
+            window.location.href = "sucesso.html";
+
         } catch (error) {
-            alert("Erro ao finalizar o cadastro. Por favor, tente novamente.");
-            console.error(error);
+            console.error("Erro ao finalizar inspeção:", error);
+            alert("Erro ao finalizar. Tente novamente.");
         }
+
     });
 });

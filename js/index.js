@@ -1,5 +1,5 @@
 import { auth, onAuthStateChanged, getInspecoesByUserId, deleteInspecao } from './firebase.js';
-
+import { generatePdfFromInspection } from './pdf.js'; // IMPORTANTE
 document.addEventListener('DOMContentLoaded', () => {
     const checklistTableBody = document.getElementById('checklistTableBody');
 
@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     </td>
                     <td>
-                        ${inspection.status === 'finalizado' ?
+                        ${inspection.status === 'finalizada' ?
                             `<img src="img/pdf.png" alt="Gerar PDF" title="Gerar PDF" onclick="openPDF('${inspection.id}')">` :
                             `<img src="img/pdf.png" class="disabled" alt="PDF Indisponível" title="PDF Indisponível">`
                         }
@@ -69,11 +69,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Global function to open PDF (placeholder for now)
-    window.openPDF = (inspectionId) => {
-        alert(`Gerar PDF para inspeção ID: ${inspectionId}`);
-        // Here you would implement the actual PDF generation logic, 
-        // possibly by fetching inspection details and generating a PDF on the fly or from a template.
-    };
+  window.openPDF = async (inspectionId) => {
+    try {
+      // opcional: mostra feedback para usuário
+      const original = document.activeElement;
+      // pode exibir um spinner/aguarde aqui
+      await generatePdfFromInspection(inspectionId);
+    } catch (err) {
+      console.error('Falha ao gerar PDF:', err);
+      alert('Erro ao gerar PDF: ' + (err.message || err));
+    }
+  };
 });
 

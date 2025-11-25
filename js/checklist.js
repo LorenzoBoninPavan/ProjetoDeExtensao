@@ -2,12 +2,13 @@
 import { auth, onAuthStateChanged, finalizarInspecao } from './firebase.js';
 import { CHECKLIST_DATA } from './checklist-data.js';
 
-// Gera linhas HTML do checklist
+// ------------------------------
+// GERA HTML DAS PERGUNTAS
+// ------------------------------
 function generateChecklistRows(questions, prefix, classe) {
-    let rowsHTML = '';
-    questions.forEach((question, index) => {
+    return questions.map((question, index) => {
         const inputName = `item_${classe}_${prefix}_${index + 1}`;
-        rowsHTML += `
+        return `
             <tr>
                 <td>${question}</td>
                 <td><input type="radio" name="${inputName}" value="na" required></td>
@@ -15,58 +16,74 @@ function generateChecklistRows(questions, prefix, classe) {
                 <td><input type="radio" name="${inputName}" value="nao" required></td>
             </tr>
         `;
-    });
-    return rowsHTML;
+    }).join('');
 }
 
-// Renderiza checklist
+// ------------------------------
+// RENDERIZA CHECKLIST NA TELA
+// ------------------------------
 function renderChecklist(classe) {
     const data = CHECKLIST_DATA[classe];
+
     if (!data) {
-        alert("Classe inválida no checklist.");
+        alert("Checklist para a classe não encontrado!");
         return;
     }
 
+    // Checklist principal
     document.getElementById('checklist-body').innerHTML =
         generateChecklistRows(data.main, "main", classe);
 
+    // Checklist de terminação
     const termContainer = document.getElementById('terminacao-checklist-container');
     const termBody = document.getElementById('terminacao-checklist-body');
 
     if (data.terminacao.length > 0) {
         termContainer.style.display = "block";
-        termBody.innerHTML = generateChecklistRows(data.terminacao, "term", classe);
+        termBody.innerHTML =
+            generateChecklistRows(data.terminacao, "term", classe);
     } else {
         termContainer.style.display = "none";
     }
 }
 
-// Login check
+// ------------------------------
+// VERIFICA LOGIN
+// ------------------------------
 onAuthStateChanged(auth, (user) => {
-    if (!user) window.location.href = 'login.html';
+    if (!user) window.location.href = "login.html";
 });
 
-// EXECUÇÃO PRINCIPAL
-document.addEventListener('DOMContentLoaded', function () {
-    const urlParams = new URLSearchParams(window.location.search);
-    const idURL = urlParams.get('id');
-    const classe = urlParams.get('classe')?.toLowerCase();
+// ------------------------------
+// LÓGICA PRINCIPAL DA PÁGINA
+// ------------------------------
+document.addEventListener("DOMContentLoaded", () => {
 
-    const finalId = idURL || sessionStorage.getItem('inspecaoId');
+    // --- RECUPERA ID E CLASSE ---
+    const params = new URLSearchParams(window.location.search);
+    const idURL = params.get("id");
+    const classe = params.get("classe")?.toLowerCase();
+
+    const finalId = idURL || sessionStorage.getItem("inspecaoId");
 
     if (!finalId || !classe) {
-        alert("Erro: ID ou classe não encontrados.");
-        window.location.href = 'identificacao.html';
+        alert("Erro ao carregar inspeção. ID ou classe ausentes.");
+        window.location.href = "identificacao.html";
         return;
     }
 
+    // Renderiza perguntas
     renderChecklist(classe);
 
-    const form = document.getElementById('checklistForm');
+    // Formulário
+    const form = document.getElementById("checklistForm");
 
-    form.addEventListener('submit', async function (event) {
-        event.preventDefault();
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
 
+        // ------------------------------
+        // COLETAR RESPOSTAS
+        // ------------------------------
         const checklistItems = {};
         const elements = form.elements;
 
@@ -76,44 +93,68 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-        const comentarios = document.querySelector('#comentarios').value;
-        const aprovacao = document.querySelector('input[name="approval"]:checked');
+        // Comentários
+        const comentarios = document.getElementById("comentarios").value;
 
+        // Aprovação
+        const aprovacao = document.querySelector('input[name="approval"]:checked');
         if (!aprovacao) {
-            alert("Selecione Aprovado ou Reprovado.");
+            alert("Selecione se está Aprovado ou Reprovado.");
             return;
         }
 
-        // Fotos do checklist
-        const fotoInputs = [
-            document.getElementById('photo1'),
-            document.getElementById('photo2'),
-            document.getElementById('photo3')
+        // ------------------------------
+        // FOTOS DO CHECKLIST
+        // ------------------------------
+        const fotosInputs = [
+            document.getElementById("photo1"),
+            document.getElementById("photo2"),
+            document.getElementById("photo3"),
         ];
 
         const fotosBase64 = await Promise.all(
-            fotoInputs.map(input => {
+            fotosInputs.map((input) => {
                 const file = input.files[0];
-                return new Promise(resolve => {
+                return new Promise((resolve) => {
                     if (!file) return resolve(null);
                     const reader = new FileReader();
                     reader.onload = () => resolve(reader.result);
+                    reader.onerror = () => resolve(null);
                     reader.readAsDataURL(file);
                 });
             })
         );
 
+        // ------------------------------
+        // OBJETO FINAL
+        // ------------------------------
         const dadosTela3 = {
-            classe: classe,
+            classe,
             itens: checklistItems,
             comentarios,
             aprovacao: aprovacao.value,
-            fotos: fotosBase64.filter(f => f !== null)
+            fotos: fotosBase64.filter((f) => f !== null),
         };
 
-        await finalizarInspecao(finalId, dadosTela3);
-        sessionStorage.removeItem('inspecaoId');
-        alert("Inspeção finalizada!");
-        window.location.href = "sucesso.html";
+        // ------------------------------
+        // SALVAR NO FIREBASE
+        // ------------------------------
+        try {
+            await finalizarInspecao(finalId, dadosTela3);
+
+            // Salva o ID para gerar o PDF na próxima tela
+            sessionStorage.setItem("lastInspectionId", finalId);
+
+            // Remove ID temporário usado no fluxo
+            sessionStorage.removeItem("inspecaoId");
+
+            alert("Inspeção finalizada com sucesso!");
+            window.location.href = "sucesso.html";
+
+        } catch (error) {
+            console.error("Erro ao finalizar inspeção:", error);
+            alert("Erro ao finalizar. Tente novamente.");
+        }
+
     });
 });

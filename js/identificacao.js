@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             
-            // Chama a função para converter as 3 fotos em Base64.
+            // Chama a função para converter as  fotos em Base64.
             const fotosBase64 = await getBase64Photos([
                 document.getElementById('photo'),
                 document.getElementById('photo2'),

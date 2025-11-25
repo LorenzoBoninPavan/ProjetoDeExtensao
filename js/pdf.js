@@ -328,6 +328,27 @@ export async function generatePdfFromInspection(id) {
         }
       }
     }
+    // ------------------------
+    // APROVAÇÃO DO CHECKLIST
+    // ------------------------
+    const aprovacaoValor = inspection.checklist?.aprovacao || 'Não informado';
+
+    // altura aproximada necessária
+    const approvalBlockHeight = 100;
+
+    // garante espaço antes de desenhar
+    await ensureSpace(approvalBlockHeight);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.text('Aprovação:', margin, currentY);
+
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text(String(aprovacaoValor).toUpperCase(), margin + 110, currentY);
+
+    currentY += 50; // espaço abaixo do campo
+
 
     // ------------------------
     // ASSINATURAS (sempre na parte inferior da última página)

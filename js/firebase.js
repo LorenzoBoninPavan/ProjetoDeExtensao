@@ -66,12 +66,9 @@ async function converterImagensBase64(arquivos) {
  */
 export async function iniciarNovoCadastroInspecao(userId, dados) {
   try {
-    const fotosInputs = dados.fotos || [];
-    const arquivos = fotosInputs
-      .map(input => input.files?.[0])
-      .filter(file => !!file);
 
-    const fotosBase64 = await converterImagensBase64(arquivos);
+    // >>> CORREÇÃO AQUI <<<
+    const fotosBase64 = dados.fotos || [];
 
     const colRef = collection(db, "inspecoes");
     const docRef = await addDoc(colRef, {
@@ -82,7 +79,7 @@ export async function iniciarNovoCadastroInspecao(userId, dados) {
         data: dados.data,
         validade: dados.validade,
         observacao: dados.observacao,
-        fotos: fotosBase64
+        fotos: fotosBase64    // Agora salva corretamente!
       },
       status: "em_andamento",
       criadoEm: Timestamp.now()
@@ -90,11 +87,13 @@ export async function iniciarNovoCadastroInspecao(userId, dados) {
 
     console.log("Inspeção criada com ID:", docRef.id);
     return docRef.id;
+
   } catch (error) {
     console.error("Erro ao criar inspeção:", error);
     throw error;
   }
 }
+
 
 /**
  * Buscar inspeção por ID
